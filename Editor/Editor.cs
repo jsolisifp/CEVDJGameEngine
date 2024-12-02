@@ -12,7 +12,7 @@ namespace GameEngine
 {
     internal class Editor
     {
-        const int selectedGameObjectsInitialCapacity = 100;
+        const int selectedGameObjectsListInitialCapacity = 100;
         const int maxNameLength = 20;
         const ImGuiWindowFlags defaultWindowFlags = ImGuiWindowFlags.AlwaysAutoResize;
 
@@ -25,8 +25,8 @@ namespace GameEngine
         static bool assetsViewEnabled;
         static bool collidersViewEnabled;
 
-        static List<bool> selectedGameObjectsSelectables;
-        static List<GameObject> selectedGameObjects;
+        static HashSet<GameObject> selectedGameObjectsSet;
+        static List<GameObject> selectedGameObjectsList;
         static string selectedAssetId;
 
 
@@ -77,8 +77,8 @@ namespace GameEngine
 
             selectedAssetId = null;
 
-            selectedGameObjectsSelectables = new List<bool>(selectedGameObjectsInitialCapacity);
-            selectedGameObjects = new List<GameObject>(selectedGameObjectsInitialCapacity);
+            selectedGameObjectsSet = new HashSet<GameObject>(selectedGameObjectsListInitialCapacity);
+            selectedGameObjectsList = new List<GameObject>(selectedGameObjectsListInitialCapacity);
 
             modalAboutOpened = true;
             modalSaveSceneAs = true;
@@ -296,8 +296,8 @@ namespace GameEngine
                 if(ImGui.MenuItem("New scene", isEngineStopped))
                 {
                     SceneManager.New();
-                    selectedGameObjectsSelectables.Clear();
-                    selectedGameObjects.Clear();
+                    selectedGameObjectsSet.Clear();
+                    selectedGameObjectsList.Clear();
                 }
 
                 bool isSceneSelected = false;
@@ -309,8 +309,8 @@ namespace GameEngine
                 if(ImGui.MenuItem("Load scene", isSceneSelected && isEngineStopped))
                 {
                     LoadSelectedScene();
-                    selectedGameObjectsSelectables.Clear();
-                    selectedGameObjects.Clear();
+                    selectedGameObjectsSet.Clear();
+                    selectedGameObjectsList.Clear();
                 }
 
                 if (ImGui.MenuItem("Save scene", isEngineStopped))
@@ -333,14 +333,6 @@ namespace GameEngine
                 else if(ImGui.MenuItem("Save scene as...", isEngineStopped))
                 {
                     openSaveSceneModal = true;
-                }
-
-                if (ImGui.MenuItem("Reload scene", isEngineStopped))
-                {
-                    SceneManager.Reload();
-                    selectedGameObjectsSelectables.Clear();
-                    selectedGameObjects.Clear();
-                    selectedAssetId = null;
                 }
 
                 ImGui.EndMenu();
@@ -392,7 +384,7 @@ namespace GameEngine
                     s.AddGameObject(go);
                 }
 
-                if (ImGui.BeginMenu("Add component", selectedGameObjects.Count == 1))
+                if (ImGui.BeginMenu("Add component", selectedGameObjectsList.Count == 1))
                 {
                     Assembly a = Assembly.GetAssembly(typeof(Editor));
                     Type[] types = a.GetTypes();
@@ -408,9 +400,9 @@ namespace GameEngine
                                 object o = Activator.CreateInstance(t);
                                 Component c = (Component)o;
 
-                                if(selectedGameObjects.Count == 1)
+                                if(selectedGameObjectsList.Count == 1)
                                 {
-                                    selectedGameObjects[0].AddComponent(c);
+                                    selectedGameObjectsList[0].AddComponent(c);
                                 }
                             }
 
@@ -420,11 +412,11 @@ namespace GameEngine
                     ImGui.EndMenu();
                 }
 
-                if(ImGui.BeginMenu("Remove component", selectedGameObjects.Count == 1))
+                if(ImGui.BeginMenu("Remove component", selectedGameObjectsList.Count == 1))
                 {
-                    if(selectedGameObjects.Count == 1)
+                    if(selectedGameObjectsList.Count == 1)
                     {
-                        List<Component> components = selectedGameObjects[0].GetComponents();
+                        List<Component> components = selectedGameObjectsList[0].GetComponents();
 
                         for(int i = 0; i < components.Count; i ++)
                         {
@@ -436,7 +428,7 @@ namespace GameEngine
                                 if(ImGui.MenuItem(t.Name))
                                 {
                                     c.Stop();
-                                    selectedGameObjects[0].RemoveComponent(c);
+                                    selectedGameObjectsList[0].RemoveComponent(c);
                                 }
                             }
                         }
@@ -446,9 +438,9 @@ namespace GameEngine
                 }
 
 
-                if(ImGui.MenuItem("Delete", selectedGameObjects.Count == 1))
+                if(ImGui.MenuItem("Delete", selectedGameObjectsList.Count == 1))
                 {
-                    if(selectedGameObjects.Count == 1)
+                    if(selectedGameObjectsList.Count == 1)
                     {
                         RemoveSelectedGameObject();
                     }
@@ -609,38 +601,27 @@ namespace GameEngine
             {
                 List<GameObject> gameObjects = scene.GetGameObjects();
 
-                if(gameObjects.Count  != selectedGameObjectsSelectables.Count)
-                {
-                    // Make sure there are positions for selectables state
-                    selectedGameObjectsSelectables.Clear();
-                    for (int i = 0; i < gameObjects.Count; i++) { selectedGameObjectsSelectables.Add(false); }
-                }
-
                 for (int i = 0; i < gameObjects.Count; i++)
                 {
                     GameObject go = gameObjects[i];
 
-                    if(ImGui.Selectable(go.name, selectedGameObjectsSelectables[i]))
+                    if(ImGui.Selectable(go.name, selectedGameObjectsSet.Contains(go)))
                     {
                         if (!ImGui.GetIO().KeyCtrl)
                         {
-                            for (int j = 0; j < selectedGameObjectsSelectables.Count; j++)
-                            {
-                                selectedGameObjectsSelectables[j] = false;
-                            }
-
-                            selectedGameObjects.Clear();
+                            selectedGameObjectsSet.Clear();
+                            selectedGameObjectsList.Clear();
                         }
 
-                        if (selectedGameObjectsSelectables[i])
+                        if (selectedGameObjectsSet.Contains(go))
                         {
-                            selectedGameObjects.Remove(go);
-                            selectedGameObjectsSelectables[i] = false;
+                            selectedGameObjectsList.Remove(go);
+                            selectedGameObjectsSet.Remove(go);
                         }
                         else
                         {
-                            selectedGameObjects.Add(go);
-                            selectedGameObjectsSelectables[i] = true;
+                            selectedGameObjectsList.Add(go);
+                            selectedGameObjectsSet.Add(go);
 
                         }
                     }
@@ -657,21 +638,21 @@ namespace GameEngine
             ImGui.Begin("Game object view", defaultWindowFlags);
 
 
-            if (selectedGameObjects.Count == 0)
+            if (selectedGameObjectsList.Count == 0)
             {
                 ImGui.Text("No game object selected");
                 ImGui.End();
                 return;
             }
-            else if (selectedGameObjects.Count > 1)
+            else if (selectedGameObjectsList.Count > 1)
             {
-                ImGui.Text(String.Format("Multiple objects selected ({0:0})", selectedGameObjects.Count));
+                ImGui.Text(String.Format("Multiple objects selected ({0:0})", selectedGameObjectsList.Count));
                 ImGui.End();
                 return;
             }
 
 
-            GameObject go = selectedGameObjects[0];
+            GameObject go = selectedGameObjectsList[0];
 
             ImGui.InputText("name", ref go.name, maxNameLength);
             ImGui.Checkbox("active", ref go.active);
@@ -817,7 +798,7 @@ namespace GameEngine
 
         static void RemoveSelectedGameObject()
         {
-            selectedGameObjects[0].Stop();
+            selectedGameObjectsList[0].Stop();
 
             // Remove references to game object
 
@@ -840,7 +821,7 @@ namespace GameEngine
                         if(ft.Name == "Transform")
                         {
                             object v = f.GetValue(c);
-                            if(v == selectedGameObjects[0].transform)
+                            if(v == selectedGameObjectsList[0].transform)
                             {
                                 f.SetValue(c, null);
                             }
@@ -849,9 +830,9 @@ namespace GameEngine
                 }
             }
 
-            activeScene.RemoveGameObject(selectedGameObjects[0]);
+            activeScene.RemoveGameObject(selectedGameObjectsList[0]);
 
-            selectedGameObjects.Clear();
+            selectedGameObjectsList.Clear();
 
         }
 
