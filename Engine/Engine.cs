@@ -7,6 +7,11 @@ namespace GameEngine
 {
     internal class Engine
     {
+        public const string title = "My game engine";
+        public const string version = "v0.81";
+        public const string license = "License CC BY-NC-SA";
+
+
         static IWindow window;
 
         public enum State
@@ -22,7 +27,7 @@ namespace GameEngine
         {
             var options = WindowOptions.Default;
             options.Size = new Vector2D<int>(1280, 720);
-            options.Title = "My Game Engine";
+            options.Title = title;
             window = Window.Create(options);
 
             window.Load += OnLoad;

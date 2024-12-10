@@ -242,8 +242,8 @@ namespace GameEngine
 
             if (ImGui.BeginPopupModal("About", ref modalAboutOpened, defaultWindowFlags))
             {
-                ImGui.Text("My game engine");
-                ImGui.Text("License CC BY-NC-SA");
+                ImGui.Text(Engine.title + " " + Engine.version);
+                ImGui.Text(Engine.license);
 
                 if (ImGui.Button("Accept")) { ImGui.CloseCurrentPopup(); }
 
