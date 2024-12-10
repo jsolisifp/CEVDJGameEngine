@@ -12,6 +12,7 @@ namespace GameEngine
 {
     internal class Editor
     {
+        const int selectedGameObjectsListInitialCapacity = 100;
         const int maxNameLength = 20;
         const ImGuiWindowFlags defaultWindowFlags = ImGuiWindowFlags.AlwaysAutoResize;
 
@@ -24,7 +25,8 @@ namespace GameEngine
         static bool assetsViewEnabled;
         static bool collidersViewEnabled;
 
-        static GameObject selectedGameObject;
+        static HashSet<GameObject> selectedGameObjectsSet;
+        static List<GameObject> selectedGameObjectsList;
         static string selectedAssetId;
 
 
@@ -74,7 +76,9 @@ namespace GameEngine
             assetsViewEnabled = true;
 
             selectedAssetId = null;
-            selectedGameObject = null;
+
+            selectedGameObjectsSet = new HashSet<GameObject>(selectedGameObjectsListInitialCapacity);
+            selectedGameObjectsList = new List<GameObject>(selectedGameObjectsListInitialCapacity);
 
             modalAboutOpened = true;
             modalSaveSceneAs = true;
@@ -292,6 +296,8 @@ namespace GameEngine
                 if(ImGui.MenuItem("New scene", isEngineStopped))
                 {
                     SceneManager.New();
+                    selectedGameObjectsSet.Clear();
+                    selectedGameObjectsList.Clear();
                 }
 
                 bool isSceneSelected = false;
@@ -303,6 +309,8 @@ namespace GameEngine
                 if(ImGui.MenuItem("Load scene", isSceneSelected && isEngineStopped))
                 {
                     LoadSelectedScene();
+                    selectedGameObjectsSet.Clear();
+                    selectedGameObjectsList.Clear();
                 }
 
                 if (ImGui.MenuItem("Save scene", isEngineStopped))
@@ -325,13 +333,6 @@ namespace GameEngine
                 else if(ImGui.MenuItem("Save scene as...", isEngineStopped))
                 {
                     openSaveSceneModal = true;
-                }
-
-                if (ImGui.MenuItem("Reload scene", isEngineStopped))
-                {
-                    SceneManager.Reload();
-                    selectedGameObject = null;
-                    selectedAssetId = null;
                 }
 
                 ImGui.EndMenu();
@@ -383,7 +384,7 @@ namespace GameEngine
                     s.AddGameObject(go);
                 }
 
-                if (ImGui.BeginMenu("Add component", selectedGameObject != null))
+                if (ImGui.BeginMenu("Add component", selectedGameObjectsList.Count == 1))
                 {
                     Assembly a = Assembly.GetAssembly(typeof(Editor));
                     Type[] types = a.GetTypes();
@@ -399,10 +400,9 @@ namespace GameEngine
                                 object o = Activator.CreateInstance(t);
                                 Component c = (Component)o;
 
-                                if(selectedGameObject != null)
+                                if(selectedGameObjectsList.Count == 1)
                                 {
-                                    selectedGameObject.AddComponent(c);
-                                    c.Start();
+                                    selectedGameObjectsList[0].AddComponent(c);
                                 }
                             }
 
@@ -412,11 +412,11 @@ namespace GameEngine
                     ImGui.EndMenu();
                 }
 
-                if(ImGui.BeginMenu("Remove component", selectedGameObject != null))
+                if(ImGui.BeginMenu("Remove component", selectedGameObjectsList.Count == 1))
                 {
-                    if(selectedGameObject != null)
+                    if(selectedGameObjectsList.Count == 1)
                     {
-                        List<Component> components = selectedGameObject.GetComponents();
+                        List<Component> components = selectedGameObjectsList[0].GetComponents();
 
                         for(int i = 0; i < components.Count; i ++)
                         {
@@ -428,7 +428,7 @@ namespace GameEngine
                                 if(ImGui.MenuItem(t.Name))
                                 {
                                     c.Stop();
-                                    selectedGameObject.RemoveComponent(c);
+                                    selectedGameObjectsList[0].RemoveComponent(c);
                                 }
                             }
                         }
@@ -438,9 +438,9 @@ namespace GameEngine
                 }
 
 
-                if(ImGui.MenuItem("Delete", selectedGameObject != null))
+                if(ImGui.MenuItem("Delete", selectedGameObjectsList.Count == 1))
                 {
-                    if(selectedGameObject != null)
+                    if(selectedGameObjectsList.Count == 1)
                     {
                         RemoveSelectedGameObject();
                     }
@@ -604,9 +604,26 @@ namespace GameEngine
                 for (int i = 0; i < gameObjects.Count; i++)
                 {
                     GameObject go = gameObjects[i];
-                    if (ImGui.Selectable(go.name, go == selectedGameObject))
+
+                    if(ImGui.Selectable(go.name, selectedGameObjectsSet.Contains(go)))
                     {
-                        selectedGameObject = go;
+                        if (!ImGui.GetIO().KeyCtrl)
+                        {
+                            selectedGameObjectsSet.Clear();
+                            selectedGameObjectsList.Clear();
+                        }
+
+                        if (selectedGameObjectsSet.Contains(go))
+                        {
+                            selectedGameObjectsList.Remove(go);
+                            selectedGameObjectsSet.Remove(go);
+                        }
+                        else
+                        {
+                            selectedGameObjectsList.Add(go);
+                            selectedGameObjectsSet.Add(go);
+
+                        }
                     }
                 }
 
@@ -620,14 +637,22 @@ namespace GameEngine
         {
             ImGui.Begin("Game object view", defaultWindowFlags);
 
-            GameObject go = selectedGameObject;
 
-            if(go == null)
+            if (selectedGameObjectsList.Count == 0)
             {
                 ImGui.Text("No game object selected");
                 ImGui.End();
                 return;
             }
+            else if (selectedGameObjectsList.Count > 1)
+            {
+                ImGui.Text(String.Format("Multiple objects selected ({0:0})", selectedGameObjectsList.Count));
+                ImGui.End();
+                return;
+            }
+
+
+            GameObject go = selectedGameObjectsList[0];
 
             ImGui.InputText("name", ref go.name, maxNameLength);
             ImGui.Checkbox("active", ref go.active);
@@ -636,27 +661,27 @@ namespace GameEngine
 
             List<Component> components = go.GetComponents();
 
-            for(int i = 0; i < components.Count; i ++)
+            for (int i = 0; i < components.Count; i++)
             {
                 Component c = components[i];
                 Type t = c.GetType();
-                if(ImGui.CollapsingHeader(t.Name))
+                if (ImGui.CollapsingHeader(t.Name))
                 {
                     ImGui.Checkbox("active", ref c.active);
 
                     FieldInfo[] fields = t.GetFields();
 
-                    for(int j = 0; j < fields.Length; j ++)
+                    for (int j = 0; j < fields.Length; j++)
                     {
                         FieldInfo f = fields[j];
                         object value = f.GetValue(c);
                         Type type = f.FieldType;
 
-                        if(type.Name == "String")
+                        if (type.Name == "String")
                         {
                             string s = (string)value;
-                            if(s == null) { s = ""; }
-                            if(ImGui.InputText(f.Name, ref s, maxNameLength))
+                            if (s == null) { s = ""; }
+                            if (ImGui.InputText(f.Name, ref s, maxNameLength))
                             {
                                 f.SetValue(c, s);
                             }
@@ -683,16 +708,16 @@ namespace GameEngine
                         {
                             bool b = (bool)value;
 
-                            if(ImGui.Checkbox(f.Name, ref b))
+                            if (ImGui.Checkbox(f.Name, ref b))
                             {
                                 f.SetValue(c, b);
                             }
                         }
-                        else if(type.Name == "Vector3")
+                        else if (type.Name == "Vector3")
                         {
                             Vector3 v = (Vector3)value;
 
-                            if(ImGui.InputFloat3(f.Name, ref v))
+                            if (ImGui.InputFloat3(f.Name, ref v))
                             {
                                 f.SetValue(c, v);
                             }
@@ -706,12 +731,12 @@ namespace GameEngine
                                 f.SetValue(c, v);
                             }
                         }
-                        else if(type.Name == "Transform")
+                        else if (type.Name == "Transform")
                         {
                             Transform t2 = (Transform)value;
                             string text = (t2 != null ? t2.GetGameObject().name : "none");
                             ImGui.InputText(f.Name, ref text, maxNameLength, ImGuiInputTextFlags.ReadOnly); ImGui.SameLine();
-                            if(ImGui.Button("Pick"))
+                            if (ImGui.Button("Pick"))
                             {
                                 modalPickTransformTargetField = f;
                                 modalPickTransformTargetComponent = c;
@@ -773,7 +798,7 @@ namespace GameEngine
 
         static void RemoveSelectedGameObject()
         {
-            selectedGameObject.Stop();
+            selectedGameObjectsList[0].Stop();
 
             // Remove references to game object
 
@@ -796,7 +821,7 @@ namespace GameEngine
                         if(ft.Name == "Transform")
                         {
                             object v = f.GetValue(c);
-                            if(v == selectedGameObject.transform)
+                            if(v == selectedGameObjectsList[0].transform)
                             {
                                 f.SetValue(c, null);
                             }
@@ -805,9 +830,9 @@ namespace GameEngine
                 }
             }
 
-            activeScene.RemoveGameObject(selectedGameObject);
+            activeScene.RemoveGameObject(selectedGameObjectsList[0]);
 
-            selectedGameObject = null;
+            selectedGameObjectsList.Clear();
 
         }
 
