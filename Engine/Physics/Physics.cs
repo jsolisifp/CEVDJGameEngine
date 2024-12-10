@@ -1061,7 +1061,7 @@ namespace GameEngine
 
             BodyDescription bodyDesc;
             Vector3 angularSpeedRads = MathUtils.DegreesToRadians(angularSpeed);
-            BodyVelocity bodyVelocity = new BodyVelocity(speed, angularSpeed);
+            BodyVelocity bodyVelocity = new BodyVelocity(speed, angularSpeedRads);
             BodyActivityDescription bodyActivityDesc = new BodyActivityDescription(sleepThreshold);
 
             if (isKinematic)

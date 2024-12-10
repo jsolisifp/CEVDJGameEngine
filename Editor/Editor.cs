@@ -42,6 +42,7 @@ namespace GameEngine
 
         static string modalFilenameText;
         static string modalAlertText;
+        static bool modalSaveScenePlayAfter;
 
         static Component modalPickTransformTargetComponent;
         static FieldInfo modalPickTransformTargetField;
@@ -250,7 +251,7 @@ namespace GameEngine
             }
 
             // Not used now, but tested
-            //if(ImGui.BeginPopupModal("Alert", ref modalAlertOpened, defaultWindowFlags))
+            //if (ImGui.BeginPopupModal("Alert", ref modalAlertOpened, defaultWindowFlags))
             //{
             //    ImGui.Text(modalAlertText);
 
@@ -278,6 +279,14 @@ namespace GameEngine
 
 
                     ImGui.CloseCurrentPopup();
+
+                    if(modalSaveScenePlayAfter)
+                    {
+                        Engine.Play();
+                        editorView = false;
+
+                        modalSaveScenePlayAfter = false;
+                    }
                 }
 
                 if(ImGui.Button("Cancel"))
@@ -340,12 +349,22 @@ namespace GameEngine
 
             if(ImGui.BeginMenu("Playback"))
             {
-               
-
                 if(ImGui.MenuItem("Play", isEngineStopped))
                 {
-                    Engine.Play();
-                    editorView = false; 
+                    Scene scene = SceneManager.GetActiveScene();
+                    string id = SceneManager.GetActiveSceneAssetId();
+                    if (id == null)
+                    {
+                        openSaveSceneModal = true;
+                        modalSaveScenePlayAfter = true;
+                    }
+                    else
+                    {
+                        SceneSerializer.Serialize(scene, Assets.GetAssetsPath() + "\\" + id);
+                        Engine.Play();
+                        editorView = false;
+                    }
+
                 }
 
                 if(ImGui.MenuItem("Pause", isEnginePlaying))
@@ -363,6 +382,7 @@ namespace GameEngine
                 if (ImGui.MenuItem("Stop", isEnginePlaying || isEnginePaused))
                 {
                     Engine.Stop();
+
                     editorView = true;
                 }
 
@@ -403,6 +423,7 @@ namespace GameEngine
                                 if(selectedGameObjectsList.Count == 1)
                                 {
                                     selectedGameObjectsList[0].AddComponent(c);
+                                    c.Start();
                                 }
                             }
 
@@ -472,7 +493,7 @@ namespace GameEngine
                     {
                         Assets.UnloadAsset(selectedAssetId, false);
 
-                        System.IO.File.Delete(selectedAssetId);
+                        File.Delete(selectedAssetId);
 
                         selectedAssetId = "";
                     }
@@ -597,7 +618,7 @@ namespace GameEngine
 
             ImGui.InputText("Name", ref scene.name, maxNameLength);
 
-            if (ImGui.CollapsingHeader("Game Objects"))
+            if (ImGui.CollapsingHeader("Game Objects", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 List<GameObject> gameObjects = scene.GetGameObjects();
 

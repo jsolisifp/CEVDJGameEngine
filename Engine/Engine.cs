@@ -1,4 +1,5 @@
-﻿using Silk.NET.Input;
+﻿using System.Diagnostics;
+using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
@@ -43,20 +44,37 @@ namespace GameEngine
 
         public static void Pause()
         {
+            #if DEBUG
+            Debug.Assert(state == State.playing, "Engine only can pause state from playing state");
+            #endif
+
+
             state = State.paused;
         }
 
         public static void Resume()
         {
+            #if DEBUG
+            Debug.Assert(state == State.paused, "Engine only can resume from paused state");
+            #endif
+
             state = State.playing;
         }
 
         public static void Play()
         {
+            #if DEBUG
+            Debug.Assert(state == State.stopped, "Engine only can enter play state from stop");
+            #endif
+
             SceneManager.Stop();
             Physics.Stop();
 
-            SceneManager.Reload();
+            // This stop and start is needed
+            // because static, isKinematic
+            // and other properties that the object captures
+            // on start may have changed.
+
 
             Physics.Start();
             SceneManager.Start();
@@ -65,6 +83,10 @@ namespace GameEngine
 
         public static void Stop()
         {
+            #if DEBUG
+            Debug.Assert(state == State.playing || state == State.paused, "Engine only can stop from playing or paused state");
+            #endif
+
             SceneManager.Stop();
             Physics.Stop();
 

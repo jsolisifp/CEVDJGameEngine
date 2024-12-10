@@ -24,6 +24,9 @@ namespace GameEngine
         Vector3 accumulatedTorque;
         Vector3 accumulatedAngularAcceleration;
 
+        bool staticInitial;
+        bool isKinematicInitial;
+
 
         public override void Start()
         {
@@ -53,6 +56,9 @@ namespace GameEngine
                                               colliderIndex, colliderType, owner);
             }
 
+            staticInitial = gameObject.@static;
+            isKinematicInitial = isKinematic;
+
             accumulatedForce = Vector3.Zero;
             accumulatedAcceleration = Vector3.Zero;
             accumulatedTorque = Vector3.Zero;
@@ -62,9 +68,9 @@ namespace GameEngine
 
         public override void FixedUpdate(float deltaTime)
         {
-            if(!gameObject.@static)
+            if(!staticInitial)
             {
-                if(isKinematic)
+                if(isKinematicInitial)
                 {
                     Physics.SetKinematicBodyState(handle, gameObject.transform.position, gameObject.transform.rotation, speed, angularSpeed);
                 }
@@ -87,7 +93,7 @@ namespace GameEngine
 
         public void AddForce(Vector3 amount, Physics.ForceMode mode)
         {
-            if(!gameObject.@static && !isKinematic)
+            if(!staticInitial && !isKinematicInitial)
             {                
                 if(mode == Physics.ForceMode.force)
                 {
@@ -127,7 +133,7 @@ namespace GameEngine
 
         public void AddTorque(Vector3 amount, Physics.ForceMode mode)
         {
-            if (!gameObject.@static && !isKinematic)
+            if (!staticInitial && !isKinematicInitial)
             {
                 if (mode == Physics.ForceMode.force)
                 {
@@ -152,7 +158,7 @@ namespace GameEngine
         {
             if (boxCollider == null && sphereCollider == null) { return; }
 
-            if(gameObject.@static)
+            if(staticInitial)
             {
                 Physics.UnregisterStaticBody(staticHandle);
             }
