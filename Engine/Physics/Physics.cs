@@ -1160,5 +1160,32 @@ namespace GameEngine
             bodyRef.ApplyDescription(bodyDesc);
 
         }
+
+        public static void SetNonStaticBodyKinematic(BodyHandle handle)
+        {
+            BodyReference bodyRef = context.Bodies.GetBodyReference(handle);
+            bodyRef.BecomeKinematic();
+        }
+
+        public static void SetNonStaticBodyDynamic(BodyHandle handle, TypedIndex colliderIndex, ColliderType colliderType, float mass)
+        {
+            BodyReference bodyRef = context.Bodies.GetBodyReference(handle);
+            BodyInertia inertia;
+
+            if (colliderType == ColliderType.box)
+            {
+                Box b = (Box)context.Shapes.GetShape<Box>(colliderIndex.Index);
+                inertia = b.ComputeInertia(mass);
+            }
+            else
+            {
+                Sphere s = (Sphere)context.Shapes.GetShape<Sphere>(colliderIndex.Index);
+                inertia = s.ComputeInertia(mass);
+            }
+
+            bodyRef.SetLocalInertia(inertia);
+
+        }
+
     }
 }

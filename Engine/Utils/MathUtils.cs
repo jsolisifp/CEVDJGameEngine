@@ -33,12 +33,12 @@ namespace GameEngine
         //
         public static Quaternion EulerToQuaternion(float rotX, float rotY, float rotZ)
         {
-            float cy = (float)Math.Cos(rotX * 0.5f);
-            float sy = (float)Math.Sin(rotX * 0.5f);
+            float cy = (float)Math.Cos(rotZ * 0.5f);
+            float sy = (float)Math.Sin(rotZ * 0.5f);
             float cp = (float)Math.Cos(rotY * 0.5f);
             float sp = (float)Math.Sin(rotY * 0.5f);
-            float cr = (float)Math.Cos(rotZ * 0.5f);
-            float sr = (float)Math.Sin(rotZ * 0.5f);
+            float cr = (float)Math.Cos(rotX * 0.5f);
+            float sr = (float)Math.Sin(rotX * 0.5f);
 
             Quaternion q = new Quaternion();
             q.W = cr * cp * cy + sr * sp * sy;

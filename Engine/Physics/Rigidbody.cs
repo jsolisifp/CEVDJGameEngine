@@ -1,6 +1,8 @@
 ﻿using BepuPhysics;
 using BepuPhysics.Collidables;
+using System.ComponentModel.Design;
 using System.Numerics;
+using static GameEngine.Physics;
 
 namespace GameEngine
 {
@@ -10,7 +12,7 @@ namespace GameEngine
         public Vector3 angularSpeed = new Vector3(0, 0, 0);
 
         public float mass = 1.0f;
-        public bool isKinematic = false;
+        public bool isKinematic;
 
         BoxCollider boxCollider;
         SphereCollider sphereCollider;
@@ -24,8 +26,8 @@ namespace GameEngine
         Vector3 accumulatedTorque;
         Vector3 accumulatedAngularAcceleration;
 
-        bool staticInitial;
-        bool isKinematicInitial;
+        bool isStaticInitial;
+        bool isKinematicPrevious;
 
 
         public override void Start()
@@ -56,21 +58,40 @@ namespace GameEngine
                                               colliderIndex, colliderType, owner);
             }
 
-            staticInitial = gameObject.@static;
-            isKinematicInitial = isKinematic;
-
             accumulatedForce = Vector3.Zero;
             accumulatedAcceleration = Vector3.Zero;
             accumulatedTorque = Vector3.Zero;
             accumulatedAngularAcceleration = Vector3.Zero;
 
+            isStaticInitial = gameObject.@static;
+            isKinematicPrevious = isKinematic;
         }
+
+        bool turnedToKinematic;
 
         public override void FixedUpdate(float deltaTime)
         {
-            if(!staticInitial)
+            if(!isStaticInitial)
             {
-                if(isKinematicInitial)
+                if (isKinematic != isKinematicPrevious)
+                {
+                    if (isKinematic)
+                    {
+                        Physics.SetNonStaticBodyKinematic(handle);
+                    }
+                    else
+                    {
+                        TypedIndex colliderIndex;
+                        Physics.ColliderType colliderType;
+                        if (boxCollider != null) { colliderIndex = boxCollider.GetTypeIndex(); colliderType = Physics.ColliderType.box; }
+                        else { colliderIndex = sphereCollider.GetTypeIndex(); colliderType = Physics.ColliderType.sphere; }
+                        Physics.SetNonStaticBodyDynamic(handle, colliderIndex, colliderType, mass);
+                    }
+
+                    isKinematicPrevious = isKinematic;
+                }
+
+                if (isKinematic)
                 {
                     Physics.SetKinematicBodyState(handle, gameObject.transform.position, gameObject.transform.rotation, speed, angularSpeed);
                 }
@@ -88,12 +109,13 @@ namespace GameEngine
                     accumulatedAngularAcceleration = Vector3.Zero;
 
                 }
+
             }
         }
 
         public void AddForce(Vector3 amount, Physics.ForceMode mode)
         {
-            if(!staticInitial && !isKinematicInitial)
+            if(!isStaticInitial && !isKinematic)
             {                
                 if(mode == Physics.ForceMode.force)
                 {
@@ -133,7 +155,7 @@ namespace GameEngine
 
         public void AddTorque(Vector3 amount, Physics.ForceMode mode)
         {
-            if (!staticInitial && !isKinematicInitial)
+            if (!isStaticInitial && !isKinematic)
             {
                 if (mode == Physics.ForceMode.force)
                 {
@@ -158,7 +180,7 @@ namespace GameEngine
         {
             if (boxCollider == null && sphereCollider == null) { return; }
 
-            if(staticInitial)
+            if(isStaticInitial)
             {
                 Physics.UnregisterStaticBody(staticHandle);
             }

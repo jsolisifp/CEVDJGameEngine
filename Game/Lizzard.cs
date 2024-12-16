@@ -44,7 +44,8 @@ namespace GameEngine
                 
                     if(rigid != null)
                     {
-                        rigid.AddForce(gameObject.transform.GetForward() * 100, Physics.ForceMode.impulse);
+                        if (!rigid.isKinematic) { rigid.isKinematic = true;  }
+                        //rigid.AddForce(gameObject.transform.GetForward() * 100, Physics.ForceMode.impulse);
                     }
                     Console.WriteLine("Hitted " + hit.transform.GetGameObject().name);
 
@@ -56,6 +57,8 @@ namespace GameEngine
         public override void OnCollisionEnter(Physics.Collision collision)
         {
             //Console.WriteLine("Entering collision with " + collision.transform.GetGameObject().name);
+
+            collision.rigidbody.isKinematic = false;
 
             for(int i = 0; i < collision.contactsCount; i++)
             {
