@@ -111,7 +111,6 @@ namespace GameEngine
             FollowCamera followC;
             DirectionalLight directionalLightC;
             GameObject sirMartinO;
-            Lizzard lizzardC;
             GameObject lizzardO;
             BoxCollider boxC;
             SphereCollider sphereC;
@@ -128,207 +127,122 @@ namespace GameEngine
             go.transform.rotation = new Vector3(45, 0, 0);
 
             go.AddComponent(directionalLightC);
+            scene.AddGameObject(go);
+
+            string[] props = { "BowlingCentralLane.obj",
+                "BowlingCover.obj",
+                "BowlingGround.obj",
+                "BowlingLaneLeft.obj",
+                "BowlingLaneRight.obj",
+                "BowlingMarksDots.obj",
+                "BowlingMarksArrows.obj",
+                "BowlingPlacePins.obj",
+                "BowlingPlatform.obj"};
+
+            string[] propsNames = { "CentralLane",
+                "Cover",
+                "Ground",
+                "LaneLeft",
+                "LaneRight",
+                "MarksDots",
+                "MarksArrows",
+                "PlacePins",
+                "Platform"};
+
+            for (int i = 0; i < propsNames.Length; i++)
+            {
+                go = new GameObject();
+                go.name = propsNames[i];
+                go.AddComponent(new Transform());
+
+                rendererC = new Renderer();
+                rendererC.modelId = props[i];
+                rendererC.shaderId = "Default.shader";
+                rendererC.textureId = "Texture1.png";
+
+                go.AddComponent(rendererC);
+                scene.AddGameObject(go);
+
+            }
+           
+            go = new GameObject();
+            go.name = "Ball";
+            go.AddComponent(new Transform());
+
+            go.transform.position = new Vector3(0, 1, 0);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "BowlingBall.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Blue.png";
+
+            go.AddComponent(rendererC);
+          
+            rigidC = new Rigidbody();
+            rigidC.isKinematic = false;
+            rigidC.mass = 4;
+
+            go.AddComponent(rigidC);
+
+            sphereC = new SphereCollider();
+            sphereC.radius = 0.1f;
+
+            go.AddComponent(sphereC);
 
             scene.AddGameObject(go);
 
-
             go = new GameObject();
-            go.name = "SirMartin";
+            go.name = "GroundCollider";
             go.AddComponent(new Transform());
-
-            c = new SirMartin();
-            go.AddComponent(c);
-
-            rendererC = new Renderer();
-            rendererC.modelId = "Model2.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Texture2.png";
-
-            go.AddComponent(rendererC);
+            
+            go.@static = true;
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(2, 1, 2);
-
-            go.AddComponent(boxC);
-
-            triggerC = new Trigger();
-
-            go.AddComponent(triggerC);
-
-            sirMartinO = go;
-            scene.AddGameObject(go);
-
-            go = new GameObject();
-            go.name = "Box";
-            go.AddComponent(new Transform());
-
-            rendererC = new Renderer();
-            rendererC.modelId = "Model1.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Texture1.png";
-
-            go.AddComponent(rendererC);
-
-
-            scene.AddGameObject(go);
-
-            go = new GameObject();
-            go.name = "Terrain";
-            go.AddComponent(new Transform());
-
-            rendererC = new Renderer();
-            rendererC.modelId = "Terrain.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Grass.png";
-
-            go.AddComponent(rendererC);
-
-            scene.AddGameObject(go);
-
-            go = new GameObject();
-            go.name = "Lizzard";
-            go.AddComponent(new Transform());
-
-            go.transform.position = new Vector3(10, 0, 0);
-
-            boxC = new BoxCollider();
-            boxC.size = new Vector3(2, 1, 2);
+            boxC.size = new Vector3(100, 0.2f, 100);
 
             go.AddComponent(boxC);
 
             rigidC = new Rigidbody();
             rigidC.isKinematic = true;
+            rigidC.mass = 4;
 
             go.AddComponent(rigidC);
-
-            lizzardC = new Lizzard();
-
-            go.AddComponent(lizzardC);
-
-            rendererC = new Renderer();
-            rendererC.modelId = "Lizzard.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Blue.png";
-
-            go.AddComponent(rendererC);
-
-            lizzardO = go;
-
             scene.AddGameObject(go);
+
 
             go = new GameObject();
             go.name = "MainCamera";
             go.AddComponent(new Transform());
 
+            go.transform.position = new Vector3(0, 1, 3);
+            go.transform.rotation = new Vector3(-20, 0, 0);  
+
             cameraC = new Camera();
             go.AddComponent(cameraC);
 
-            followC = new FollowCamera();
-
-            followC.target = lizzardO.transform;
-
-            go.AddComponent(followC);
-
             scene.AddGameObject(go);
 
-            Random r = new Random(0);
-
-            for(int i = 0; i < 300; i ++)
-            {
-
-                go = new GameObject();
-                go.name = String.Format("PhysicBox{0:000}", i);
-                go.AddComponent(new Transform());
-
-                go.transform.position = new Vector3(r.NextSingle() * 12 - 12.5f, r.NextSingle() * 50, r.NextSingle() * 25 - 12.5f);
-                go.transform.rotation = new Vector3(r.NextSingle() * 90, r.NextSingle() * 90, r.NextSingle() * 90);
-                go.transform.scale = new Vector3(0.5f + r.NextSingle() * 0.5f, 0.5f + r.NextSingle() * 0.5f, 0.5f + r.NextSingle() * 0.5f);
-
-                boxC = new BoxCollider();
-                boxC.size = new Vector3(1, 1, 1);
-
-                go.AddComponent(boxC);
-
-                rigidC = new Rigidbody();
-                rigidC.isKinematic = false;
-
-                rigidC.speed = new Vector3(r.NextSingle() * 25 - 12.5f, r.NextSingle() * 25 - 12.5f, r.NextSingle() * 25 - 12.5f);
-                rigidC.angularSpeed = new Vector3(r.NextSingle() * 10 - 5, r.NextSingle() * 10 - 5, r.NextSingle() * 10 - 5);
-
-                rigidC.mass = boxC.size.X * boxC.size.Y * boxC.size.Z * 10;
-
-                go.AddComponent(rigidC);
-
-                rendererC = new Renderer();
-                rendererC.modelId = "UnitBox.obj";
-                rendererC.shaderId = "Default.shader";
-                rendererC.textureId = "Wood.png";
-
-                go.AddComponent(rendererC);
-
-
-                scene.AddGameObject(go);
-
-
-                go = new GameObject();
-                go.name = String.Format("PhysicSphere{0:000}", i);
-                go.AddComponent(new Transform());
-
-                go.transform.position = new Vector3(r.NextSingle() * 50 - 25, r.NextSingle() * 50, r.NextSingle() * 50 - 25);
-                go.transform.rotation = new Vector3(0, 0, 0);
-                go.transform.scale = new Vector3(1, 1, 1) * (0.5f + r.NextSingle() * 0.5f);
-
-                sphereC = new SphereCollider();
-                sphereC.radius = 0.5f;
-
-                go.AddComponent(sphereC);
-
-                rigidC = new Rigidbody();
-                rigidC.isKinematic = false;
-                rigidC.mass = 4 / 3 * MathF.PI * MathF.Pow(sphereC.radius, 3) * 10;
-
-                rigidC.speed = new Vector3(r.NextSingle() * 25 - 12.5f, r.NextSingle() * 25 - 12.5f, r.NextSingle() * 25 - 12.5f);
-                rigidC.angularSpeed = new Vector3(r.NextSingle() * 10 - 5, r.NextSingle() * 10 - 5, r.NextSingle() * 10 - 5);
-
-                go.AddComponent(rigidC);
-
-                rendererC = new Renderer();
-                rendererC.modelId = "UnitSphere.obj";
-                rendererC.shaderId = "Default.shader";
-                rendererC.textureId = "Wood.png";
-
-                go.AddComponent(rendererC);
-
-                scene.AddGameObject(go);
-
-            }
-
             go = new GameObject();
-            go.name = "Trigger";
+            go.name = "HandRight";
             go.AddComponent(new Transform());
 
-            go.transform.position = new Vector3(3, 10, 0);
-            go.transform.rotation = new Vector3(0, 0, 0);
-            go.transform.scale = new Vector3(1, 1, 1) * 8;
-
-            sphereC = new SphereCollider();
-            sphereC.radius = 0.5f;
-
-            triggerC = new Trigger();
-            go.AddComponent(triggerC);
-
-            go.AddComponent(sphereC);
-
             rendererC = new Renderer();
-            rendererC.modelId = "UnitSphere.obj";
+            rendererC.modelId = "HandRight.obj";
             rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Wood.png";
+            rendererC.textureId = "Blue.png";
 
             go.AddComponent(rendererC);
 
+            boxC = new BoxCollider();
+            boxC.size = new Vector3(0.5f, 0.1f, 0.12f);
+
+            go .AddComponent(boxC);
+
+            go.AddComponent(new Trigger());
+
+            go.AddComponent(new Hand());
 
             scene.AddGameObject(go);
-
 
             go = new GameObject();
             go.name = "Floor";
