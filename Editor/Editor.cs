@@ -259,7 +259,7 @@ namespace GameEngine
                     if (components[i].GetType() == typeof(Weapon))
                     {
                         Weapon weapon = (Weapon)components[i];
-                        if (ImGui.Selectable(weapon.name)) { done = true; picked = weapon; }
+                        if (ImGui.Selectable(weapon.name +" "+i)) { done = true; picked = weapon; }
                     }
                 }
 
@@ -726,7 +726,7 @@ namespace GameEngine
             {
                 Component c = components[i];
                 Type t = c.GetType();
-                if (ImGui.CollapsingHeader(t.Name))
+                if (ImGui.CollapsingHeader(t.Name +" "+ i))
                 {
                     ImGui.Checkbox("active", ref c.active);
 
@@ -742,7 +742,7 @@ namespace GameEngine
                         {
                             string s = (string)value;
                             if (s == null) { s = ""; }
-                            if (ImGui.InputText(f.Name, ref s, maxNameLength))
+                            if (ImGui.InputText(f.Name + " " + i, ref s, maxNameLength))
                             {
                                 f.SetValue(c, s);
                             }
@@ -756,7 +756,7 @@ namespace GameEngine
                             {
                                 s = array[k];
                                 if (s == null) { s = ""; }
-                                if (ImGui.InputText(f.Name + " " + k, ref s, maxNameLength))
+                                if (ImGui.InputText(f.Name + " " + i + k, ref s, maxNameLength))
                                 {
                                     s=s.Replace(",", "");
                                     array[k] = s;
@@ -768,7 +768,7 @@ namespace GameEngine
                         {
                             int n = (int)value;
 
-                            if (ImGui.InputInt(f.Name, ref n))
+                            if (ImGui.InputInt(f.Name + " " + i, ref n))
                             {
                                 f.SetValue(c, n);
                             }
@@ -777,7 +777,7 @@ namespace GameEngine
                         {
                             Single s = (Single)value;
 
-                            if (ImGui.InputFloat(f.Name, ref s))
+                            if (ImGui.InputFloat(f.Name + " " + i, ref s))
                             {
                                 f.SetValue(c, s);
                             }
@@ -786,7 +786,7 @@ namespace GameEngine
                         {
                             bool b = (bool)value;
 
-                            if (ImGui.Checkbox(f.Name, ref b))
+                            if (ImGui.Checkbox(f.Name + " " + i, ref b))
                             {
                                 f.SetValue(c, b);
                             }
@@ -795,7 +795,7 @@ namespace GameEngine
                         {
                             Vector3 v = (Vector3)value;
 
-                            if (ImGui.InputFloat3(f.Name, ref v))
+                            if (ImGui.InputFloat3(f.Name + " " + i, ref v))
                             {
                                 f.SetValue(c, v);
                             }
@@ -804,7 +804,7 @@ namespace GameEngine
                         {
                             Vector4 v = (Vector4)value;
 
-                            if (ImGui.InputFloat4(f.Name, ref v))
+                            if (ImGui.InputFloat4(f.Name + " " + i, ref v))
                             {
                                 f.SetValue(c, v);
                             }
@@ -826,7 +826,7 @@ namespace GameEngine
                             Weapon w = (Weapon)value;
                             string text = (w != null ? w.name : "none");
                             ImGui.InputText(f.Name, ref text, maxNameLength, ImGuiInputTextFlags.ReadOnly); ImGui.SameLine();
-                            if (ImGui.Button("Pick " + j))
+                            if (ImGui.Button("Pick " + i + j))
                             {
                                 modalPickWeaponTargetField = f;
                                 modalPickWeaponTargetComponent = c;

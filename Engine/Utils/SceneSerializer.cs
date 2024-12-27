@@ -286,7 +286,7 @@ namespace GameEngine
         static string SerializeStringArray(string[] array)
         {
             // easy tambien
-            string s = string.Join(";", array);
+            string s = string.Join(",", array);
             return s;
         }
 

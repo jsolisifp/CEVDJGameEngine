@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Silk.NET.Vulkan;
 
 namespace GameEngine
 {
@@ -14,8 +15,10 @@ namespace GameEngine
         public Weapon rightWeapon;
 
         public bool isAiming;
+        public bool isFlying;
         public Vector3 currentAim;
         public Vector3 armsRestingRotation;
+        public Vector3 speed;
 
         public bool leftLeverIsGrabbed;
         public bool rightLeverIsGrabbed;
@@ -36,6 +39,7 @@ namespace GameEngine
 
         Vector3 rightArmOffset;
         Vector3 rightLeverOffset;
+        Vector3 rightArmRestingRotation;
 
 
         Transform[] transforms; //0 Torso, 1 BrazoIzq, 2 BrazoDer, 3 Piernas, 4 Piloto, 5 PalancaIzq, 6 PalancaDer
@@ -44,6 +48,8 @@ namespace GameEngine
         {
 
             currentAim = Vector3.Zero;
+            armsRestingRotation = new Vector3(39,-10,20);
+            speed = Vector3.Zero;
 
             torsoOffset = new Vector3(0,0.8f,0);
             armsOffset = new Vector3(0.7f,0.57f,0);
@@ -83,6 +89,7 @@ namespace GameEngine
             for (int i = 0; i < 7; i++) {
                 transforms[i].rotation.Y = gameObject.transform.rotation.Y;
             }
+
             if (isAiming)
             {
                 transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position),Vector3.UnitY);
@@ -91,7 +98,9 @@ namespace GameEngine
             else
             {
                 transforms[1].rotation = armsRestingRotation;
-                transforms[2].rotation = armsRestingRotation;
+                rightArmRestingRotation = armsRestingRotation * -1;
+                rightArmRestingRotation.X *= -1;
+                transforms[2].rotation = rightArmRestingRotation;
             }
 
             if (leftWeapon != null)
@@ -117,6 +126,11 @@ namespace GameEngine
             if (!rightLeverIsGrabbed)
             {
                 transforms[6].LookAt(transforms[0].TransformPosition(rightLeverOffset - Vector3.UnitY), Vector3.UnitZ);
+            }
+
+            if (speed != Vector3.Zero)
+            {
+                gameObject.transform.position += gameObject.transform.TransformDirection(speed)*deltaTime;
             }
         }
 
