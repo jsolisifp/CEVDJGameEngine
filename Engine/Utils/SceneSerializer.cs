@@ -75,6 +75,10 @@ namespace GameEngine
                         {
                             valueString = SerializeString((string)value);
                         }
+                        else if (typeName == "String[]")
+                        {
+                            valueString = SerializeStringArray((string[])value);
+                        }
                         else if (typeName == "Single")
                         {
                             valueString = SerializeSingle((Single)value);
@@ -238,6 +242,10 @@ namespace GameEngine
                             {
                                 if (pass == 0) { value = fieldValueString; }
                             }
+                            else if (fieldTypeName == "String[]")
+                            {
+                                if (pass == 0) { value = fieldValueString.Split(','); }
+                            }
                             else if (type.IsSubclassOf(typeof(Component)))
                             {
                                 if (pass == 1)
@@ -273,6 +281,12 @@ namespace GameEngine
         static string SerializeString(string s)
         {
             // easy
+            return s;
+        }
+        static string SerializeStringArray(string[] array)
+        {
+            // easy tambien
+            string s = string.Join(";", array);
             return s;
         }
 

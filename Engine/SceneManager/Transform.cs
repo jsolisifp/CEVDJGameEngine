@@ -21,7 +21,7 @@ namespace GameEngine
 
         public void LookAt(Vector3 position, Vector3 up)
         {
-            Transform t = gameObject.transform;
+            Transform t = this;
             Matrix4x4 view = Matrix4x4.CreateLookAt(t.position, position, up);
             Matrix4x4 rotate;
             Matrix4x4.Invert(view, out rotate);

@@ -34,11 +34,13 @@ namespace GameEngine
         static bool modalSaveSceneAs;
         static bool modalAlertOpened;
         static bool modalPickTransformOpened;
+        static bool modalPickWeaponOpened;
 
         static bool openSaveSceneModal;
         static bool openAboutModal;
         static bool openAlertModal;
         static bool openPickTransformModal;
+        static bool openPickWeaponModal;
 
         static string modalFilenameText;
         static string modalAlertText;
@@ -46,6 +48,9 @@ namespace GameEngine
 
         static Component modalPickTransformTargetComponent;
         static FieldInfo modalPickTransformTargetField;
+
+        static Component modalPickWeaponTargetComponent;
+        static FieldInfo modalPickWeaponTargetField;
 
         static Vector3 cameraPosition;
         static Vector3 cameraRotation;
@@ -85,6 +90,7 @@ namespace GameEngine
             modalSaveSceneAs = true;
             modalAlertOpened = true;
             modalPickTransformOpened = true;
+            modalPickWeaponOpened = true;
 
             cameraPosition = new Vector3(0, 5, -10);
             cameraRotation = new Vector3(0, 180, 0);
@@ -234,6 +240,34 @@ namespace GameEngine
                     modalPickTransformTargetField.SetValue(modalPickTransformTargetComponent, picked);
                     modalPickTransformTargetField = null;
                     modalPickTransformTargetComponent = null;
+                    ImGui.CloseCurrentPopup();
+                }
+
+                ImGui.EndPopup();
+            }
+
+            if (ImGui.BeginPopupModal("Pick weapon", ref modalPickWeaponOpened, defaultWindowFlags))
+            {
+                Weapon picked = null;
+                bool done = false;
+                List<Component> components = selectedGameObjectsList[0].GetComponents();
+
+                if (ImGui.Selectable("none")) { done = true; picked = null; }
+
+                for (int i = 0; i < components.Count; i++)
+                {
+                    if (components[i].GetType() == typeof(Weapon))
+                    {
+                        Weapon weapon = (Weapon)components[i];
+                        if (ImGui.Selectable(weapon.name)) { done = true; picked = weapon; }
+                    }
+                }
+
+                if (done)
+                {
+                    modalPickWeaponTargetField.SetValue(modalPickWeaponTargetComponent, picked);
+                    modalPickWeaponTargetField = null;
+                    modalPickWeaponTargetComponent = null;
                     ImGui.CloseCurrentPopup();
                 }
 
@@ -565,6 +599,11 @@ namespace GameEngine
                 ImGui.OpenPopup("Pick transform");
             }
 
+            if (openPickWeaponModal)
+            {
+                ImGui.OpenPopup("Pick weapon");
+            }
+
             if (openAboutModal)
             {
                 ImGui.OpenPopup("About");
@@ -586,6 +625,7 @@ namespace GameEngine
             openAboutModal = false;
             openAlertModal = false;
             openPickTransformModal = false;
+            openPickWeaponModal = false;
 
 
         }
@@ -707,6 +747,23 @@ namespace GameEngine
                                 f.SetValue(c, s);
                             }
                         }
+                        else if (type.Name == "String[]")
+                        {
+                            string[] array = (string[])value;
+
+                            string s;
+                            for (int k = 0; k < array.Length; k++)
+                            {
+                                s = array[k];
+                                if (s == null) { s = ""; }
+                                if (ImGui.InputText(f.Name + " " + k, ref s, maxNameLength))
+                                {
+                                    s=s.Replace(",", "");
+                                    array[k] = s;
+                                    f.SetValue(c, array);
+                                }
+                            }
+                        }
                         else if (type.Name == "Int32")
                         {
                             int n = (int)value;
@@ -757,11 +814,23 @@ namespace GameEngine
                             Transform t2 = (Transform)value;
                             string text = (t2 != null ? t2.GetGameObject().name : "none");
                             ImGui.InputText(f.Name, ref text, maxNameLength, ImGuiInputTextFlags.ReadOnly); ImGui.SameLine();
-                            if (ImGui.Button("Pick"))
+                            if (ImGui.Button("Pick "+j))
                             {
                                 modalPickTransformTargetField = f;
                                 modalPickTransformTargetComponent = c;
                                 openPickTransformModal = true;
+                            }
+                        }
+                        else if (type.Name == "Weapon")
+                        {
+                            Weapon w = (Weapon)value;
+                            string text = (w != null ? w.name : "none");
+                            ImGui.InputText(f.Name, ref text, maxNameLength, ImGuiInputTextFlags.ReadOnly); ImGui.SameLine();
+                            if (ImGui.Button("Pick " + j))
+                            {
+                                modalPickWeaponTargetField = f;
+                                modalPickWeaponTargetComponent = c;
+                                openPickWeaponModal = true;                                               
                             }
                         }
 
