@@ -13,6 +13,7 @@ namespace GameEngine
 
         public override void Update(float deltaTime)
         {
+            if(target == null) return;
             gameObject.transform.position = target.position + new Vector3(0, 3, -10);
             gameObject.transform.LookAt(target.position + new Vector3(0, 2, 0), Vector3.UnitY);
         }

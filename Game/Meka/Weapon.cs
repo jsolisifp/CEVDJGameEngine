@@ -51,5 +51,10 @@ namespace GameEngine
                 GameEngine.Render.DrawModel(transform.position,transform.rotation,transform.scale,m,s,t);
             }
         }
+
+        public void Shoot()
+        {
+            Console.WriteLine("Bang");
+        }
     }
 }
