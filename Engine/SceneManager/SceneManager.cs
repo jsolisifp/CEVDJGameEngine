@@ -114,6 +114,9 @@ namespace GameEngine
             SphereCollider sphereC;
             Rigidbody rigidC;
             Trigger triggerC;
+            Meka mekaC;
+            Weapon weaponC;
+            MekaController mekaControllerC;
 
             go = new GameObject();
             go.name = "DirectionalLight";
@@ -125,114 +128,6 @@ namespace GameEngine
             go.transform.rotation = new Vector3(45, 0, 0);
 
             go.AddComponent(directionalLightC);
-            scene.AddGameObject(go);
-
-            string[] props =
-            [
-                "BowlingCentralLane.obj",
-                "BowlingCover.obj",
-                "BowlingGround.obj",
-                "BowlingLaneLeft.obj",
-                "BowlingLaneRight.obj",
-                "BowlingMarksArrow.obj",
-                "BowlingMarksDots.obj",
-                "BowlingPlacedPins.obj",
-                "BowlingPlatform.obj"
-            ];
-
-            string[] propsNames =
-            [
-                "CentralLane",
-                "Cover",
-                "Ground",
-                "LaneLeft",
-                "LaneRight",
-                "MarksArrow",
-                "MarksDots",
-                "PlacedPins",
-                "Platform"
-            ];
-
-            string[] propsTextures =
-            [
-                "Wood.png",
-                "Gray.png",
-                "Wood.png",
-                "Red.png",
-                "Red.png",
-                "Red.png",
-                "Red.png",
-                "Gray.png",
-                "Wood.png"
-            ];
-
-            for ( int i = 0; i < props.Length; i++)
-            {
-                go = new GameObject();
-                go.name = propsNames[i];
-                go.AddComponent(new Transform());
-
-                rendererC = new Renderer();
-                rendererC.modelId = props[i];
-                rendererC.shaderId = "Default.shader";
-                rendererC.textureId = propsTextures[i];
-
-                go.AddComponent(rendererC);
-
-
-                scene.AddGameObject(go);
-            }
-
-
-            go = new GameObject();
-            go.name = "Ball";
-            go.AddComponent(new Transform());
-            go.transform.position = new Vector3(0, 1, 0);
-
-            rendererC = new Renderer();
-            rendererC.modelId = "BowlingBall.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Purple.png";
-
-            go.AddComponent(rendererC);
-
-            rigidC = new Rigidbody();
-            rigidC.isKinematic = false;
-            rigidC.mass = 4;
-
-            go.AddComponent(rigidC);
-
-            sphereC = new SphereCollider();
-            sphereC.radius = 0.1f;
-
-            go.AddComponent(sphereC);
-
-            scene.AddGameObject(go);
-
-            go = new GameObject();
-            go.name = "HandRight";
-            go.AddComponent(new Transform());
-            go.transform.position = new Vector3(0, 1, 0);
-
-            rendererC = new Renderer();
-            rendererC.modelId = "HandRight.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Gray.png";
-
-            go.AddComponent(rendererC);
-
-            rigidC = new Rigidbody();
-            rigidC.isKinematic = true;
-            rigidC.mass = 4;
-
-            go.AddComponent(rigidC);
-
-            boxC = new BoxCollider();
-            boxC.size = new Vector3(0.05f, 0.01f, 0.12f);
-            go.AddComponent(boxC);
-
-            go.AddComponent(new Hand());
-
             scene.AddGameObject(go);
 
             go = new GameObject();
@@ -252,7 +147,7 @@ namespace GameEngine
             go.AddComponent(new Transform());
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(500, 1, 500);
+            boxC.size = new Vector3(250, 1, 250);
 
             go.AddComponent(boxC);
 
@@ -261,10 +156,41 @@ namespace GameEngine
             go.AddComponent(rigidC);
 
             go.transform.position = new Vector3(0, -0.5f, 0);
-            go.transform.rotation = new Vector3(0, 0, 0);
+            go.transform.scale = new Vector3(250, 1, 250);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "UnitBox.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Wood.png";
+
+            go.AddComponent(rendererC);
 
             scene.AddGameObject(go);
-            
+
+            go = new GameObject();
+            go.name = "Meka";
+            go.AddComponent(new Transform());
+            mekaC = new Meka();
+            go.AddComponent(mekaC);
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.leftWeapon = weaponC;
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.rightWeapon = weaponC;
+
+            scene.AddGameObject(go);
+
+            go = new GameObject();
+            go.name = "MekaController";
+            go.AddComponent(new Transform());
+            mekaControllerC = new MekaController();
+            go.AddComponent(mekaControllerC);
+            mekaControllerC.mainCameraTransform = cameraC.GetGameObject().transform;
+            mekaControllerC.mekaTransform = mekaC.GetGameObject().transform;
+
+            scene.AddGameObject(go);
+
             return scene;
 
         }

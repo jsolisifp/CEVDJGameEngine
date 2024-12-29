@@ -43,6 +43,7 @@ namespace GameEngine
 
         public bool isAiming;
         public bool isFlying;
+        public bool isTargetLock;
         public Vector3 currentAim;
         public Vector3 armsRestingRotation;
         public Vector3 speed;
@@ -62,7 +63,7 @@ namespace GameEngine
         public string shader;
         public string[] textures; //0 Torso, 1 BrazoIzq, 2 BrazoDer, 3 Piernas, 4 Piloto, 5 PalancaIzq, 6 PalancaDer
 
-        
+
 
         Vector3 rightArmOffset;
         Vector3 rightLeverOffset;
@@ -78,20 +79,34 @@ namespace GameEngine
             hp = 100;
             maxHp = 100;
 
-            energy = 100;   
+            energy = 100;
             maxEnergy = 100;
+
+            groundAcceleration = 2;
+            airAcceleration = 4;
+            jumpAcceleration = 6;
+            upwardsAcceleration = 2;
+            gravityAcceleration = 1;
+
+            groundDeceleration = 3;
+            airDeceleration = 2;
+
+            maxGroundSpeed = 15;
+            maxFlightSpeed = 20;
+            maxLiftSpeed = 10;
+            maxFallSpeed = 15;
 
 
             currentAim = Vector3.Zero;
-            armsRestingRotation = new Vector3(39,-10,20);
+            armsRestingRotation = new Vector3(39, -10, 20);
             speed = Vector3.Zero;
 
-            torsoOffset = new Vector3(0,0.8f,0);
-            armsOffset = new Vector3(0.7f,0.57f,0);
-            pilotOffset = new Vector3(0,0.4f,-0.15f);
-            leverOffset = new Vector3(0.2f,0.35f,0.2f);
+            torsoOffset = new Vector3(0, 0.8f, 0);
+            armsOffset = new Vector3(0.7f, 0.57f, 0);
+            pilotOffset = new Vector3(0, 0.4f, -0.15f);
+            leverOffset = new Vector3(0.2f, 0.35f, 0.2f);
             legOffset = Vector3.Zero;
-            handOffset = new Vector3(0,-0.2f,0.75f);
+            handOffset = new Vector3(0, -0.2f, 0.75f);
 
             models = ["CajaGatoTorso.obj", "CajaGatoBrazoIzq.obj", "CajaGatoBrazoDer.obj", "CajaGatoPiernas.obj", "CajaGatoPilotoTmp.obj", "CajaGatoPalanca.obj", "CajaGatoPalanca.obj"];
             shader = "Default.shader";
@@ -100,11 +115,11 @@ namespace GameEngine
             rightArmOffset = Vector3.Zero;
             rightLeverOffset = Vector3.Zero;
             transforms = new Transform[7];
-            for(int i = 0; i < 7; i++)
+            for (int i = 0; i < 7; i++)
             {
                 transforms[i] = new Transform();
             }
-            
+
         }
 
         public override void Update(float deltaTime)
@@ -114,8 +129,8 @@ namespace GameEngine
 
             if (speed != Vector3.Zero && !isFlying)
             {
-                transforms[0].position.Y -= 0.1f;
-                transforms[3].scale.Y = 0.875f;
+                transforms[0].position.Y -= 0.2f;
+                transforms[3].scale.Y = 0.8f;
             }
             else
             {
@@ -142,7 +157,7 @@ namespace GameEngine
                 tmpAim.Y = transforms[0].position.Y;
                 transforms[0].LookAt(transforms[0].position - (tmpAim - transforms[0].position), Meka.vectorUp);
             }
-            else if(!isAiming && isFlying)
+            else if (!isAiming && isFlying)
             {
                 transforms[0].rotation.Y = gameObject.transform.rotation.Y;
                 transforms[0].rotation.X = speed.Z / maxFlightSpeed * 50 + gameObject.transform.rotation.X;
@@ -154,7 +169,16 @@ namespace GameEngine
                 transforms[0].rotation.X = speed.Z / maxGroundSpeed * 25 + gameObject.transform.rotation.X;
             }
 
-            for (int i = 1; i < 7; i++) {
+            if (isAiming && isTargetLock)
+            {
+                gameObject.transform.rotation.Y = transforms[0].rotation.Y;
+                gameObject.transform.rotation.X = ((gameObject.transform.rotation.X < 0 ? 360 : 0) + gameObject.transform.rotation.X) % 360;
+                gameObject.transform.rotation.Y = ((gameObject.transform.rotation.Y < 0 ? 360 : 0) + gameObject.transform.rotation.Y) % 360;
+                gameObject.transform.rotation.Z = ((gameObject.transform.rotation.Z < 0 ? 360 : 0) + gameObject.transform.rotation.Z) % 360;
+            }
+
+            for (int i = 1; i < 7; i++)
+            {
                 transforms[i].rotation = transforms[0].rotation;
             }
 
@@ -165,14 +189,15 @@ namespace GameEngine
 
             if (isAiming)
             {
-                transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position),Meka.vectorUp);
+                transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position), Meka.vectorUp);
                 transforms[2].LookAt(transforms[2].position - (currentAim - transforms[2].position), Meka.vectorUp);
             }
             else
             {
                 transforms[1].rotation += armsRestingRotation;
-                rightArmRestingRotation = armsRestingRotation * -1;
-                rightArmRestingRotation.X *= -1;
+                rightArmRestingRotation.X = armsRestingRotation.X;
+                rightArmRestingRotation.Y = armsRestingRotation.Y + 20;
+                rightArmRestingRotation.Z = armsRestingRotation.Z - 40;
                 transforms[2].rotation += rightArmRestingRotation;
             }
 
@@ -192,7 +217,7 @@ namespace GameEngine
 
             if (!leftLeverIsGrabbed)
             {
-                transforms[5].LookAt(transforms[0].TransformPosition(leverOffset- Meka.vectorUp),Vector3.UnitZ);
+                transforms[5].LookAt(transforms[0].TransformPosition(leverOffset - Meka.vectorUp), Vector3.UnitZ);
             }
 
 
@@ -203,7 +228,7 @@ namespace GameEngine
 
             if (speed != Vector3.Zero)
             {
-                gameObject.transform.position += gameObject.transform.TransformDirection(speed)*deltaTime;
+                gameObject.transform.position += gameObject.transform.TransformDirection(speed) * deltaTime;
             }
         }
 
@@ -221,8 +246,9 @@ namespace GameEngine
                 m = Assets.GetLoadedAsset<Model>(models[i]);
                 t = Assets.GetLoadedAsset<Texture>(textures[i]);
 
-                if (m!=null && t!=null) {
-                    GameEngine.Render.DrawModel(transforms[i].position, transforms[i].rotation, transforms[i].scale,m,s,t);
+                if (m != null && t != null)
+                {
+                    GameEngine.Render.DrawModel(transforms[i].position, transforms[i].rotation, transforms[i].scale, m, s, t);
                 }
             }
         }
@@ -231,50 +257,58 @@ namespace GameEngine
         {
 
             gameObject.transform.rotation.Y += rotation * 100 * deltaTime;
+            float acceleration = isFlying ? airAcceleration : groundAcceleration;
+            float deceleration = isFlying ? airDeceleration : groundDeceleration;
+            float maxSpeed = isFlying ? maxFlightSpeed : maxGroundSpeed;
 
-            if (!isFlying)
+            if (input.X == 0)
             {
-                if (input.X != 0 || input.Z != 0)
+                if (speed.X > 0)
                 {
-                    speed += input * groundAcceleration;
+                    speed.X -= deceleration;
+                    if (speed.X < 0) speed.X = 0;
                 }
-                if (input.X == 0)
+                else if (speed.X < 0)
                 {
-                    if (speed.X > 0)
-                    {
-                        speed.X -= groundDeceleration;
-                        if (speed.X < 0) speed.X = 0;
-                    }
-                    else if (speed.X < 0)
-                    {
-                        speed.X += groundDeceleration;
-                        if (speed.X > 0) speed.X = 0;
-                    }
+                    speed.X += deceleration;
+                    if (speed.X > 0) speed.X = 0;
                 }
-                if(input.Z == 0) {
-                    if (speed.Z > 0)
-                    {
-                        speed.Z -= groundDeceleration;
-                        if (speed.Z < 0) speed.Z = 0;
-                    }
-                    else if (speed.Z < 0)
-                    {
-                        speed.Z += groundDeceleration;
-                        if (speed.Z > 0) speed.Z = 0;
-                    }
-                }
-
-                if (speed.X > maxGroundSpeed) { speed.X = maxGroundSpeed; }
-                else if (speed.X < -maxGroundSpeed) { speed.X = -maxGroundSpeed; }
-
-                if (speed.Z > maxGroundSpeed) { speed.Z = maxGroundSpeed; }
-                else if (speed.Z < -maxGroundSpeed) { speed.Z = -maxGroundSpeed; }
-
             }
             else
             {
-
+                speed.X += input.X * acceleration;
             }
+
+            if (input.Z == 0)
+            {
+                if (speed.Z > 0)
+                {
+                    speed.Z -= deceleration;
+                    if (speed.Z < 0) speed.Z = 0;
+                }
+                else if (speed.Z < 0)
+                {
+                    speed.Z += deceleration;
+                    if (speed.Z > 0) speed.Z = 0;
+                }
+            }
+            else
+            {
+                speed.Z += input.Z * acceleration;
+            }
+
+            if (input.Y == 0 && isFlying) speed.Y -= gravityAcceleration;
+            else if (input.Y == 1 && !isFlying) speed.Y += jumpAcceleration;
+            else if (input.Y == 1 && isFlying) speed.Y += upwardsAcceleration;
+
+            if (speed.X > maxSpeed) { speed.X = maxSpeed; }
+            else if (speed.X < -maxSpeed) { speed.X = -maxSpeed; }
+
+            if (speed.Z > maxSpeed) { speed.Z = maxSpeed; }
+            else if (speed.Z < -maxSpeed) { speed.Z = -maxSpeed; }
+
+            if(speed.Y > maxLiftSpeed) { speed.Y = maxLiftSpeed;}
+            else if(speed.Y < -maxFallSpeed) { speed.Y = -maxFallSpeed;}
         }
     }
 }

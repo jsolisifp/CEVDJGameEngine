@@ -791,6 +791,15 @@ namespace GameEngine
                                 f.SetValue(c, b);
                             }
                         }
+                        else if (type.Name == "Vector2")
+                        {
+                            Vector2 v = (Vector2)value;
+
+                            if (ImGui.InputFloat2(f.Name + " " + i, ref v))
+                            {
+                                f.SetValue(c, v);
+                            }
+                        }
                         else if (type.Name == "Vector3")
                         {
                             Vector3 v = (Vector3)value;

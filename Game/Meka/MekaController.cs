@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -18,84 +19,108 @@ namespace GameEngine
         public float centeringSpeed;
         public float cameraSpeed;
 
+        public Vector2 xCameraBoundaries;
+        public Vector2 yCameraBoundaries;
+        public Vector2 zCameraBoundaries;
+
+        Meka meka;
         public override void Update(float deltaTime)
         {
             if(mekaTransform == null || mainCameraTransform == null) return;
             
+            meka = mekaTransform.GetGameObject().GetComponent<Meka>();
 
             CenterCamera(deltaTime);
             CameraRotation();
             ControlMeka(deltaTime);
+
+            //"Suelo" temporal para ir testeando antes de que empiece a tocar las fisicas
+            if (mekaTransform.position.Y > 0) meka.isFlying = true;
+            else if (mekaTransform.position.Y < 0) { meka.isFlying = false; mekaTransform.position.Y = 0; }
         }
 
         private void CenterCamera(float deltaTime)
         {
-            Vector3 position = mekaTransform.TransformPosition(cameraOffset);
 
-            if (mainCameraTransform.position.X != position.X)
+            Vector3 position = mekaTransform.InverseTransformPosition(mainCameraTransform.position);
+            float maxSpeed = meka.isFlying ? meka.maxFlightSpeed : meka.maxGroundSpeed;
+
+            if (position.X != cameraOffset.X)
             {
-                if (mainCameraTransform.position.X < position.X)
+                if (position.X < cameraOffset.X)
                 {
-                    mainCameraTransform.position.X += centeringSpeed * deltaTime;
-                    if (mainCameraTransform.position.X > position.X) mainCameraTransform.position.X = position.X;
+                    position.X += centeringSpeed * deltaTime;
+                    if (position.X > cameraOffset.X) position.X = cameraOffset.X;
+                    else if (position.X < xCameraBoundaries.Y) position.X = xCameraBoundaries.Y;
                 }
                 else
                 {
-                    mainCameraTransform.position.X -= centeringSpeed * deltaTime;
-                    if (mainCameraTransform.position.X < position.X) mainCameraTransform.position.X = position.X;
+                    position.X -= centeringSpeed * deltaTime;
+                    if (position.X < cameraOffset.X) position.X = cameraOffset.X;
+                    else if (position.X > xCameraBoundaries.X) position.X = xCameraBoundaries.X;
                 }
             }
 
-            if (mainCameraTransform.position.Y != position.Y)
+            if (position.Y != cameraOffset.Y)
             {
-                if (mainCameraTransform.position.Y < position.Y)
+                if (position.Y < cameraOffset.Y)
                 {
-                    mainCameraTransform.position.Y += centeringSpeed * deltaTime;
-                    if (mainCameraTransform.position.Y > position.Y) mainCameraTransform.position.Y = position.Y;
+                    position.Y += centeringSpeed * deltaTime;
+                    if (position.Y > cameraOffset.Y) position.Y = cameraOffset.Y;
+                    else if (position.Y < yCameraBoundaries.Y) position.Y = yCameraBoundaries.Y;
                 }
                 else
                 {
-                    mainCameraTransform.position.Y -= centeringSpeed * deltaTime;
-                    if (mainCameraTransform.position.Y < position.Y) mainCameraTransform.position.Y = position.Y;
+                    position.Y -= centeringSpeed * deltaTime;
+                    if (position.Y < cameraOffset.Y) position.Y = cameraOffset.Y;
+                    else if (position.Y > yCameraBoundaries.X) position.Y = yCameraBoundaries.X;
                 }
             }
 
-            if (mainCameraTransform.position.Z != position.Z)
+            if (position.Z != cameraOffset.Z)
             {
-                if (mainCameraTransform.position.Z < position.Z)
+                if (position.Z < cameraOffset.Z)
                 {
-                    mainCameraTransform.position.Z += centeringSpeed * deltaTime;
-                    if (mainCameraTransform.position.Z > position.Z) mainCameraTransform.position.Z = position.Z;
+                    position.Z += centeringSpeed * deltaTime;
+                    if (position.Z > cameraOffset.Z) position.Z = cameraOffset.Z;
+                    else if (position.Z < zCameraBoundaries.Y) position.Z = zCameraBoundaries.Y;
                 }
                 else
                 {
-                    mainCameraTransform.position.Z -= centeringSpeed * deltaTime;
-                    if (mainCameraTransform.position.Z < position.Z) mainCameraTransform.position.Z = position.Z;
+                    position.Z -= centeringSpeed * deltaTime;
+                    if (position.Z < cameraOffset.Z) position.Z = cameraOffset.Z;
+                    else if (position.Z > zCameraBoundaries.X) position.Z = zCameraBoundaries.X;
                 }
             }
+
+            mainCameraTransform.position = mekaTransform.TransformPosition(position);
         }
 
         private void CameraRotation()
         {
-            Meka meka = mekaTransform.GetGameObject().GetComponent<Meka>();
-            if (!meka.isAiming)
+            if (!meka.isAiming || !meka.isTargetLock)
             {
-                
-            }
-            else
-            {
+                mainCameraTransform.rotation.X = 0;
+                mainCameraTransform.rotation.Y = mekaTransform.rotation.Y + 180;
+                mainCameraTransform.rotation.Z = 0;
+            } else {
+                float tmpHeight = mainCameraTransform.position.Y;
+                mainCameraTransform.position.Y = meka.currentAim.Y;
                 mainCameraTransform.LookAt(meka.currentAim, Vector3.UnitY);
+                mainCameraTransform.position.Y = tmpHeight;
             }
-            mainCameraTransform.rotation.X = 0;
-            mainCameraTransform.rotation.Y = mekaTransform.rotation.Y + 180;
-            mainCameraTransform.rotation.Z = 0;
-        }
 
+            mainCameraTransform.rotation.X = ((mainCameraTransform.rotation.X < 0 ? 360 : 0) + mainCameraTransform.rotation.X) % 360;
+            mainCameraTransform.rotation.Y = ((mainCameraTransform.rotation.Y < 0 ? 360 : 0) + mainCameraTransform.rotation.Y) % 360;
+            mainCameraTransform.rotation.Z = ((mainCameraTransform.rotation.Z < 0 ? 360 : 0) + mainCameraTransform.rotation.Z) % 360;
+        }
+         
         Vector3 input;
         float rotation;
+        bool fPresed;
+        bool ctrlPresed;
         private void ControlMeka(float deltaTime)
         {
-            Meka meka = mekaTransform.GetGameObject().GetComponent<Meka>();
 
             if (Input.IsKeyPressed(Key.W)) { input.Z = 1; }
             else if (Input.IsKeyPressed(Key.S)) { input.Z = -1; }
@@ -103,7 +128,7 @@ namespace GameEngine
 
             if (Input.IsKeyPressed(Key.A)) { input.X = 1; }
             else if (Input.IsKeyPressed(Key.D)) { input.X = -1; }
-            else { input.X = 0; }
+            else { input.X = 0;                             }
 
             if (Input.IsKeyPressed(Key.Space)) { input.Y = 1; }
             else { input.Y = 0; }
@@ -112,7 +137,12 @@ namespace GameEngine
             else if (Input.IsKeyPressed(Key.E)) { rotation = -1; }
             else { rotation = 0; }
 
-            if(Input.IsKeyPressed(Key.F)) meka.isAiming = !meka.isAiming;
+            if (Input.IsKeyPressed(Key.F)) { meka.isAiming = !meka.isAiming; fPresed = true; }
+            if(!Input.IsKeyPressed(Key.F)) fPresed = false;
+
+            if (Input.IsKeyPressed(Key.ControlLeft)) { meka.isTargetLock = !meka.isTargetLock; ctrlPresed = true; }
+            if (!Input.IsKeyPressed(Key.ControlLeft)) ctrlPresed = false;
+
 
             meka.InputMeka(deltaTime, input, rotation);
 

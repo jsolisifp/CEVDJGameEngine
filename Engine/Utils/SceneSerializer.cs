@@ -91,6 +91,11 @@ namespace GameEngine
                         {
                             valueString = SerializeBool((Boolean)value);
                         }
+                        else if (typeName == "Vector2")
+                        {
+                            Vector2 v = (Vector2)value;
+                            valueString = SerializeSingle(v.X) + "," + SerializeSingle(v.Y);
+                        }
                         else if (typeName == "Vector3")
                         {
                             Vector3 v = (Vector3)value;
@@ -216,6 +221,15 @@ namespace GameEngine
                             else if (fieldTypeName == "Boolean")
                             {
                                 if (pass == 0) { value = DeserializeBool(fieldValueString); }
+                            }
+                            else if (fieldTypeName == "Vector2")
+                            {
+                                if (pass == 0)
+                                {
+                                    string[] parts = fieldValueString.Split(',');
+                                    value = new Vector2(DeserializeSingle(parts[0]),
+                                                        DeserializeSingle(parts[1]));
+                                }
                             }
                             else if (fieldTypeName == "Vector3")
                             {
