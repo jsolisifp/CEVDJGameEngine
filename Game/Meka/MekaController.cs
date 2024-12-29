@@ -104,15 +104,9 @@ namespace GameEngine
                 mainCameraTransform.rotation.Y = mekaTransform.rotation.Y + 180;
                 mainCameraTransform.rotation.Z = 0;
             } else {
-                float tmpHeight = mainCameraTransform.position.Y;
-                mainCameraTransform.position.Y = meka.currentAim.Y;
                 mainCameraTransform.LookAt(meka.currentAim, Vector3.UnitY);
-                mainCameraTransform.position.Y = tmpHeight;
             }
 
-            mainCameraTransform.rotation.X = ((mainCameraTransform.rotation.X < 0 ? 360 : 0) + mainCameraTransform.rotation.X) % 360;
-            mainCameraTransform.rotation.Y = ((mainCameraTransform.rotation.Y < 0 ? 360 : 0) + mainCameraTransform.rotation.Y) % 360;
-            mainCameraTransform.rotation.Z = ((mainCameraTransform.rotation.Z < 0 ? 360 : 0) + mainCameraTransform.rotation.Z) % 360;
         }
          
         Vector3 input;

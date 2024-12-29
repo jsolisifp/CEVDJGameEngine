@@ -171,10 +171,9 @@ namespace GameEngine
 
             if (isAiming && isTargetLock)
             {
-                gameObject.transform.rotation.Y = transforms[0].rotation.Y;
-                gameObject.transform.rotation.X = ((gameObject.transform.rotation.X < 0 ? 360 : 0) + gameObject.transform.rotation.X) % 360;
-                gameObject.transform.rotation.Y = ((gameObject.transform.rotation.Y < 0 ? 360 : 0) + gameObject.transform.rotation.Y) % 360;
-                gameObject.transform.rotation.Z = ((gameObject.transform.rotation.Z < 0 ? 360 : 0) + gameObject.transform.rotation.Z) % 360;
+                Vector3 tmpAim = currentAim;
+                tmpAim.Y = gameObject.transform.position.Y;
+                gameObject.transform.LookAt(gameObject.transform.position - (tmpAim - gameObject.transform.position), Meka.vectorUp);
             }
 
             for (int i = 1; i < 7; i++)
