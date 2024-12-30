@@ -35,8 +35,8 @@ namespace GameEngine
             ControlMeka(deltaTime);
 
             //"Suelo" temporal para ir testeando antes de que empiece a tocar las fisicas
-            if (mekaTransform.position.Y > 0) meka.isFlying = true;
-            else if (mekaTransform.position.Y < 0) { meka.isFlying = false; mekaTransform.position.Y = 0; }
+            if (mekaTransform.position.Y > 1) meka.isFlying = true;
+            else if (mekaTransform.position.Y < 0) { meka.isFlying = false; mekaTransform.position.Y = 0; meka.speed.Y = 0; }
         }
 
         private void CenterCamera(float deltaTime)
@@ -111,8 +111,8 @@ namespace GameEngine
          
         Vector3 input;
         float rotation;
-        bool fPresed;
-        bool ctrlPresed;
+        float fLastPressed;
+        float ctrlLastPressed;
         private void ControlMeka(float deltaTime)
         {
 
@@ -131,11 +131,11 @@ namespace GameEngine
             else if (Input.IsKeyPressed(Key.E)) { rotation = -1; }
             else { rotation = 0; }
 
-            if (Input.IsKeyPressed(Key.F)) { meka.isAiming = !meka.isAiming; fPresed = true; }
-            if(!Input.IsKeyPressed(Key.F)) fPresed = false;
+            if (Input.IsKeyPressed(Key.F) && fLastPressed > 0.5) { meka.isAiming = !meka.isAiming; fLastPressed = 0; }
+            else fLastPressed += deltaTime; 
 
-            if (Input.IsKeyPressed(Key.ControlLeft)) { meka.isTargetLock = !meka.isTargetLock; ctrlPresed = true; }
-            if (!Input.IsKeyPressed(Key.ControlLeft)) ctrlPresed = false;
+            if (Input.IsKeyPressed(Key.ControlLeft) && ctrlLastPressed > 0.5) { meka.isTargetLock = !meka.isTargetLock; ctrlLastPressed = 0; }
+            else ctrlLastPressed += deltaTime;
 
 
             meka.InputMeka(deltaTime, input, rotation);

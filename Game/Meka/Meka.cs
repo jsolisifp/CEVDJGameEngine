@@ -98,7 +98,7 @@ namespace GameEngine
 
 
             currentAim = Vector3.Zero;
-            armsRestingRotation = new Vector3(39, -10, 20);
+            armsRestingRotation = new Vector3(0.7f, 0.4f, 0.5f);
             speed = Vector3.Zero;
 
             torsoOffset = new Vector3(0, 0.8f, 0);
@@ -122,6 +122,8 @@ namespace GameEngine
 
         }
 
+        float lastRotation;
+        Vector3 position;
         public override void Update(float deltaTime)
         {
             transforms[0].position = gameObject.transform.TransformPosition(torsoOffset); //Torso
@@ -129,7 +131,7 @@ namespace GameEngine
 
             if (speed != Vector3.Zero && !isFlying)
             {
-                transforms[0].position.Y -= 0.2f;
+                transforms[0].position.Y -= 0.15f;
                 transforms[3].scale.Y = 0.8f;
             }
             else
@@ -147,27 +149,39 @@ namespace GameEngine
             rightLeverOffset.X = -leverOffset.X;
             transforms[6].position = transforms[0].TransformPosition(rightLeverOffset); //PalancaDer
 
-            if (isAiming && isFlying)
+            float maxSpeed, marginX, marginY;
+
+            if (!isFlying)
             {
-                transforms[0].LookAt(transforms[0].position - (currentAim - transforms[0].position), Meka.vectorUp);
+                maxSpeed = maxGroundSpeed;
+                marginX = 0.25f;
+                marginY = 1.5f;
             }
-            else if (isAiming && !isFlying)
+            else
+            {
+                maxSpeed = maxFlightSpeed;
+                marginX = 1;
+                marginY = 2.5f;
+            }
+
+            position = new Vector3(0, 0, 5);
+
+            if (isAiming) 
             {
                 Vector3 tmpAim = currentAim;
                 tmpAim.Y = transforms[0].position.Y;
                 transforms[0].LookAt(transforms[0].position - (tmpAim - transforms[0].position), Meka.vectorUp);
             }
-            else if (!isAiming && isFlying)
-            {
-                transforms[0].rotation.Y = gameObject.transform.rotation.Y;
-                transforms[0].rotation.X = speed.Z / maxFlightSpeed * 50 + gameObject.transform.rotation.X;
-                transforms[0].rotation.Z = -speed.X / maxFlightSpeed * 50 + gameObject.transform.rotation.Z;
-            }
             else
             {
                 transforms[0].rotation = gameObject.transform.rotation;
-                transforms[0].rotation.X = speed.Z / maxGroundSpeed * 25 + gameObject.transform.rotation.X;
+                transforms[0].LookAt(transforms[0].position - (transforms[0].TransformPosition(position) - transforms[0].position), Meka.vectorUp);
             }
+
+            position = new Vector3(0, -speed.Z / maxSpeed * marginY, 5);
+            position = transforms[0].TransformPosition(position);
+            Vector3 up = transforms[0].TransformDirection(new(speed.X / maxSpeed * marginX, 1, 0));
+            transforms[0].LookAt(transforms[0].position - (position - transforms[0].position), up);
 
             if (isAiming && isTargetLock)
             {
@@ -175,29 +189,41 @@ namespace GameEngine
                 tmpAim.Y = gameObject.transform.position.Y;
                 gameObject.transform.LookAt(gameObject.transform.position - (tmpAim - gameObject.transform.position), Meka.vectorUp);
             }
+            else
+            {
+                gameObject.transform.rotation.X = 0;
+                gameObject.transform.rotation.Z = 0;
+            }
+            
 
             for (int i = 1; i < 7; i++)
             {
                 transforms[i].rotation = transforms[0].rotation;
             }
 
-            if (!isFlying && !isAiming)
+            if (!isFlying)
             {
                 transforms[3].rotation = gameObject.transform.rotation;
+                if (isAiming) 
+                {
+                    Vector3 tmpAim = currentAim;
+                    tmpAim.Y = transforms[3].position.Y;
+                    transforms[3].LookAt(transforms[3].position - (tmpAim - transforms[3].position), Meka.vectorUp);
+                }
+                
             }
 
             if (isAiming)
             {
-                transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position), Meka.vectorUp);
-                transforms[2].LookAt(transforms[2].position - (currentAim - transforms[2].position), Meka.vectorUp);
+                transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position), up);
+                transforms[2].LookAt(transforms[2].position - (currentAim - transforms[2].position), up);
             }
             else
             {
-                transforms[1].rotation += armsRestingRotation;
-                rightArmRestingRotation.X = armsRestingRotation.X;
-                rightArmRestingRotation.Y = armsRestingRotation.Y + 20;
-                rightArmRestingRotation.Z = armsRestingRotation.Z - 40;
-                transforms[2].rotation += rightArmRestingRotation;
+                transforms[1].LookAt(transforms[1].position - (transforms[0].TransformPosition(armsRestingRotation) - transforms[1].position), up);
+                rightArmRestingRotation = armsRestingRotation;
+                rightArmRestingRotation.X = -armsRestingRotation.X;
+                transforms[2].LookAt(transforms[2].position - (transforms[0].TransformPosition(rightArmRestingRotation) - transforms[2].position), up);
             }
 
             if (leftWeapon != null)
