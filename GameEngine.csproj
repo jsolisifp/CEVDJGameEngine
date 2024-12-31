@@ -25,4 +25,8 @@
 	<PackageReference Include="BepuPhysics" Version="2.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Game\Projectilles\" />
+  </ItemGroup>
+
 </Project>

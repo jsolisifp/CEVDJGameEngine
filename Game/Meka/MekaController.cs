@@ -24,6 +24,7 @@ namespace GameEngine
         public Vector2 zCameraBoundaries;
 
         Meka meka;
+        
         public override void Update(float deltaTime)
         {
             if(mekaTransform == null || mainCameraTransform == null) return;
@@ -34,9 +35,26 @@ namespace GameEngine
             CameraRotation();
             ControlMeka(deltaTime);
 
-            //"Suelo" temporal para ir testeando antes de que empiece a tocar las fisicas
-            if (mekaTransform.position.Y > 1) meka.isFlying = true;
-            else if (mekaTransform.position.Y < 0) { meka.isFlying = false; mekaTransform.position.Y = 0; meka.speed.Y = 0; }
+
+            bool floor = false;
+            Vector3 position;
+            Physics.RaycastHit hit;
+            for (int i = 0; i < 4 && meka.speed.Y<=0 && !floor; i++)
+            {
+                position = new Vector3(i%2==0?-0.25f:0.25f,0, i >= 2 ? -0.25f : 0.25f);
+                floor = Physics.Raycast(mekaTransform.TransformPosition(position), -Vector3.UnitY, 0.1f,out hit);
+                if (floor)
+                {
+                    mekaTransform.position.Y -= hit.distance;
+                    meka.speed.Y = 0;
+                    meka.isFlying = false;
+                }
+            }
+
+            if (!floor || meka.speed.Y>0)
+            {
+                meka.isFlying = true;
+            }
         }
 
         private void CenterCamera(float deltaTime)
