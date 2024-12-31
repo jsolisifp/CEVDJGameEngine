@@ -10,58 +10,64 @@ using Silk.NET.Input;
 
 namespace GameEngine
 {
-    internal class MekaController : Component
+    internal class MekaPlayerController : Component, IMekaController
     {
+
+        
         public Transform mekaTransform;
         public Transform mainCameraTransform;
+        public Transform targetingZone;
 
         public Vector3 cameraOffset;
         public float centeringSpeed;
-        public float cameraSpeed;
 
         public Vector2 xCameraBoundaries;
         public Vector2 yCameraBoundaries;
         public Vector2 zCameraBoundaries;
 
+
+        public Vector3 targetingOffset;
+
         Meka meka;
+        Target mekaTarget;
+
+        Target currentTarget;
+        List<Target> targets;
         
+        public MekaPlayerController()
+        {
+            targetingOffset= new Vector3(0,0,-22);
+            cameraOffset = new Vector3(0, 2.5f, -5);
+            
+            centeringSpeed = 7;
+            xCameraBoundaries = new Vector2(4,-4);
+            yCameraBoundaries = new Vector2(5,-5);
+            zCameraBoundaries = new Vector2(-3,-10);
+
+        }
+        public override void Start()
+        {
+            meka = mekaTransform.GetGameObject().GetComponent<Meka>();
+            mekaTarget = meka.hitBox.GetGameObject().GetComponent<Target>();
+            targets = new List<Target>();
+        }
+
+
         public override void Update(float deltaTime)
         {
-            if(mekaTransform == null || mainCameraTransform == null) return;
-            
-            meka = mekaTransform.GetGameObject().GetComponent<Meka>();
+            if(mekaTransform == null || meka == null || mainCameraTransform == null || targetingZone == null) return;
 
             CenterCamera(deltaTime);
             CameraRotation();
+            TargetingSystem();
             ControlMeka(deltaTime);
 
-
-            bool floor = false;
-            Vector3 position;
-            Physics.RaycastHit hit;
-            for (int i = 0; i < 4 && meka.speed.Y<=0 && !floor; i++)
-            {
-                position = new Vector3(i%2==0?-0.25f:0.25f,0, i >= 2 ? -0.25f : 0.25f);
-                floor = Physics.Raycast(mekaTransform.TransformPosition(position), -Vector3.UnitY, 0.1f,out hit);
-                if (floor)
-                {
-                    mekaTransform.position.Y -= hit.distance;
-                    meka.speed.Y = 0;
-                    meka.isFlying = false;
-                }
-            }
-
-            if (!floor || meka.speed.Y>0)
-            {
-                meka.isFlying = true;
-            }
         }
 
         private void CenterCamera(float deltaTime)
         {
 
             Vector3 position = mekaTransform.InverseTransformPosition(mainCameraTransform.position);
-            float maxSpeed = meka.isFlying ? meka.maxFlightSpeed : meka.maxGroundSpeed;
 
             if (position.X != cameraOffset.X)
             {
@@ -156,8 +162,42 @@ namespace GameEngine
             else ctrlLastPressed += deltaTime;
 
 
-            meka.InputMeka(deltaTime, input, rotation);
+            meka.InputMeka(input, rotation, currentTarget);
 
+        }
+
+        private void TargetingSystem()
+        {
+            targetingZone.rotation = mekaTransform.rotation;
+            targetingZone.position = mainCameraTransform.TransformPosition(targetingOffset);
+
+            if (targets.Count == 0) { currentTarget = null; return; }
+
+            if (meka.isTargetLock && currentTarget != null && currentTarget.teamId != -1) return;
+            meka.isTargetLock = false;
+            Target tmpTarget = null;
+            Vector3 tmpVector;
+            float distance = -1;
+            for (int i = 0; i < targets.Count; i++)
+            {
+                tmpVector = mekaTransform.InverseTransformPosition(targets[i].GetGameObject().transform.position);
+                if(i == 0 || tmpVector.Length()<distance)
+                { 
+                    tmpTarget = targets[i];
+                    distance = tmpVector.Length();
+                }
+            }
+            currentTarget = tmpTarget;
+        }
+        public void AddTarget(Target target)
+        {
+            if (target.teamId == -1 || target.teamId == mekaTarget.teamId) return;
+            targets.Add(target);
+        }
+
+        public void RemoveTarget(Target target)
+        {
+            targets.Remove(target);
         }
     }
 }

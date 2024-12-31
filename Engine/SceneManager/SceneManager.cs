@@ -116,7 +116,10 @@ namespace GameEngine
             Trigger triggerC;
             Meka mekaC;
             Weapon weaponC;
-            MekaController mekaControllerC;
+            MekaPlayerController mekaControllerC;
+            Target targetC;
+            TargetingZone targetingZoneC;
+            SimpleController simpleControllerC; 
 
             go = new GameObject();
             go.name = "DirectionalLight";
@@ -147,7 +150,7 @@ namespace GameEngine
             go.AddComponent(new Transform());
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(250, 1, 250);
+            boxC.size = new Vector3(1, 1, 1);
 
             go.AddComponent(boxC);
 
@@ -168,6 +171,32 @@ namespace GameEngine
             scene.AddGameObject(go);
 
             go = new GameObject();
+            go.name = "Column";
+            go.@static = true;
+            go.AddComponent(new Transform());
+
+            boxC = new BoxCollider();
+            boxC.size = new Vector3(1, 1, 1);
+
+            go.AddComponent(boxC);
+
+            rigidC = new Rigidbody();
+
+            go.AddComponent(rigidC);
+
+            go.transform.position = new Vector3(3, 4, 3);
+            go.transform.scale = new Vector3(2, 8, 2);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "UnitBox.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Rock.png";
+
+            go.AddComponent(rendererC);
+
+            scene.AddGameObject(go);
+
+            go = new GameObject();
             go.name = "Meka";
             go.AddComponent(new Transform());
             mekaC = new Meka();
@@ -182,12 +211,99 @@ namespace GameEngine
             scene.AddGameObject(go);
 
             go = new GameObject();
+            go.name = "MekaHitbox";
+            go.AddComponent(new Transform());
+            mekaC.hitBox = go.transform;
+            boxC = new BoxCollider();
+            boxC.size = new Vector3(1, 1, 1);
+
+            go.AddComponent(boxC);
+
+            rigidC = new Rigidbody();
+            rigidC.isKinematic = true;
+
+            go.AddComponent(rigidC);
+
+            targetC = new Target();
+
+            targetC.mekaTransform = mekaC.GetGameObject().transform;
+
+            go.AddComponent(targetC);
+
+            scene.AddGameObject (go);
+
+            go = new GameObject();
             go.name = "MekaController";
             go.AddComponent(new Transform());
-            mekaControllerC = new MekaController();
+            mekaControllerC = new MekaPlayerController();
             go.AddComponent(mekaControllerC);
             mekaControllerC.mainCameraTransform = cameraC.GetGameObject().transform;
             mekaControllerC.mekaTransform = mekaC.GetGameObject().transform;
+
+            scene.AddGameObject(go);
+
+            go = new GameObject();
+            go.name = "TargetingZone";
+            go.AddComponent(new Transform());
+            
+            boxC = new BoxCollider();
+            boxC.size = new Vector3(20, 20, 30);
+
+            go.AddComponent(boxC);
+
+            triggerC = new Trigger();
+
+            go.AddComponent(triggerC);
+            
+            targetingZoneC = new TargetingZone();
+            targetingZoneC.controller = mekaControllerC.GetGameObject().transform;
+            mekaControllerC.targetingZone = go.transform;
+            go.AddComponent (targetingZoneC);
+
+            scene.AddGameObject(go);
+
+
+            go = new GameObject();
+            go.name = "MekaDummy";
+            go.AddComponent(new Transform());
+            go.transform.position = new Vector3 (-5, 5, 5);
+            go.transform.rotation = new Vector3(0, 180, 0);
+            mekaC = new Meka();
+            go.AddComponent(mekaC);
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.leftWeapon = weaponC;
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.rightWeapon = weaponC;
+            mekaC.textures[4] = "Red.png";
+            simpleControllerC = new SimpleController();
+            simpleControllerC.mekaTransform=go.transform;
+            simpleControllerC.input=-Vector3.UnitZ;
+            simpleControllerC.rotation = 1;
+            go.AddComponent(simpleControllerC);
+
+            scene.AddGameObject(go);
+
+            go = new GameObject();
+            go.name = "MekaDummyHitbox";
+            go.AddComponent(new Transform());
+            mekaC.hitBox = go.transform;
+            boxC = new BoxCollider();
+            boxC.size = new Vector3(1, 1, 1);
+
+            go.AddComponent(boxC);
+
+            rigidC = new Rigidbody();
+            rigidC.isKinematic = true;
+
+            go.AddComponent(rigidC);
+
+            targetC = new Target();
+            targetC.teamId = 1;
+            targetC.mekaTransform = mekaC.GetGameObject().transform;
+
+            go.AddComponent(targetC);
 
             scene.AddGameObject(go);
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameEngine
 {
-    internal class Pin
+    internal class Projectile : Component
     {
     }
 }

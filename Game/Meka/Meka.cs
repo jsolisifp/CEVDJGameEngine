@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using BepuPhysics.Constraints.Contact;
 using Silk.NET.Vulkan;
 
 namespace GameEngine
@@ -13,6 +14,7 @@ namespace GameEngine
     {
         public Weapon leftWeapon;
         public Weapon rightWeapon;
+        public Transform hitBox;
 
         public int hp;
         public int maxHp;
@@ -44,12 +46,18 @@ namespace GameEngine
         public bool isAiming;
         public bool isFlying;
         public bool isTargetLock;
+
         public Vector3 currentAim;
+        public float targetingSpeed;
+        Target targetAim;
+
         public Vector3 armsRestingRotation;
         public Vector3 speed;
 
         public bool leftLeverIsGrabbed;
         public bool rightLeverIsGrabbed;
+
+        public Vector3 hitboxOffset;
 
         //Offset relativos de los componentes
         public Vector3 torsoOffset;
@@ -96,10 +104,14 @@ namespace GameEngine
             maxLiftSpeed = 10;
             maxFallSpeed = 15;
 
+            targetAim = null;
+            targetingSpeed = 20;
 
             currentAim = Vector3.Zero;
             armsRestingRotation = new Vector3(0.7f, 0.4f, 0.5f);
             speed = Vector3.Zero;
+
+            hitboxOffset = new Vector3(0, 0.5f, 0);
 
             torsoOffset = new Vector3(0, 0.8f, 0);
             armsOffset = new Vector3(0.7f, 0.57f, 0);
@@ -122,10 +134,11 @@ namespace GameEngine
 
         }
 
-        float lastRotation;
-        Vector3 position;
+        Vector3 lookAtPosition;
+        float lastDeltaTime;
         public override void Update(float deltaTime)
         {
+
             transforms[0].position = gameObject.transform.TransformPosition(torsoOffset); //Torso
             transforms[3].position = transforms[0].TransformPosition(legOffset); //Piernas
 
@@ -138,6 +151,9 @@ namespace GameEngine
             {
                 transforms[3].scale.Y = 1;
             }
+
+            AimControl(deltaTime);
+            
 
             transforms[1].position = transforms[0].TransformPosition(armsOffset); //BrazoIzquierdo
             rightArmOffset = armsOffset * 1;
@@ -164,7 +180,7 @@ namespace GameEngine
                 marginY = 2.5f;
             }
 
-            position = new Vector3(0, 0, 5);
+            lookAtPosition = new Vector3(0, 0, 5);
 
             if (isAiming) 
             {
@@ -175,13 +191,13 @@ namespace GameEngine
             else
             {
                 transforms[0].rotation = gameObject.transform.rotation;
-                transforms[0].LookAt(transforms[0].position - (transforms[0].TransformPosition(position) - transforms[0].position), Meka.vectorUp);
+                transforms[0].LookAt(transforms[0].position - (transforms[0].TransformPosition(lookAtPosition) - transforms[0].position), Meka.vectorUp);
             }
 
-            position = new Vector3(0, -speed.Z / maxSpeed * marginY, 5);
-            position = transforms[0].TransformPosition(position);
+            lookAtPosition = new Vector3(0, -speed.Z / maxSpeed * marginY, 5);
+            lookAtPosition = transforms[0].TransformPosition(lookAtPosition);
             Vector3 up = transforms[0].TransformDirection(new(speed.X / maxSpeed * marginX, 1, 0));
-            transforms[0].LookAt(transforms[0].position - (position - transforms[0].position), up);
+            transforms[0].LookAt(transforms[0].position - (lookAtPosition - transforms[0].position), up);
 
             if (isAiming && isTargetLock)
             {
@@ -255,6 +271,16 @@ namespace GameEngine
             {
                 gameObject.transform.position += gameObject.transform.TransformDirection(speed) * deltaTime;
             }
+            if (hitBox != null)
+            {
+                hitBox.position = transforms[0].TransformPosition(hitboxOffset);
+                hitBox.rotation = transforms[0].rotation;
+            }
+
+            SpeedControl(deltaTime);
+            CheckFloor();
+
+            lastDeltaTime = deltaTime;
         }
 
         public override void Render(float deltaTime)
@@ -278,9 +304,67 @@ namespace GameEngine
             }
         }
 
-        public void InputMeka(float deltaTime, Vector3 input, float rotation)
+        private void AimControl(float deltaTime)
         {
+            if (targetAim != null)
+            {
+                Vector3 position = targetAim.GetGameObject().transform.position;
+                if (currentAim != position)
+                {
+                    if (position.X > currentAim.X)
+                    {
+                        currentAim.X += targetingSpeed * deltaTime;
+                        if(currentAim.X > position.X) currentAim.X = position.X;
+                    }
+                    else if (position.X < currentAim.X)
+                    {
+                        currentAim.X -= targetingSpeed * deltaTime;
+                        if (currentAim.X < position.X) currentAim.X = position.X;
+                    }
 
+                    if (position.Y > currentAim.Y)
+                    {
+                        currentAim.Y += targetingSpeed * deltaTime;
+                        if (currentAim.Y > position.Y) currentAim.Y = position.Y;
+                    }
+                    else if (position.Y < currentAim.Y)
+                    {
+                        currentAim.Y -= targetingSpeed * deltaTime;
+                        if (currentAim.Y < position.Y) currentAim.Y = position.Y;
+                    }
+
+                    if (position.Z > currentAim.Z)
+                    {
+                        currentAim.Z += targetingSpeed * deltaTime;
+                        if (currentAim.Z > position.Z) currentAim.Z = position.Z;
+                    }
+                    else if (position.Z < currentAim.Z)
+                    {
+                        currentAim.Z -= targetingSpeed * deltaTime;
+                        if (currentAim.Z < position.Z) currentAim.Z = position.Z;
+                    }
+
+                }
+                isAiming = true;
+            }
+            else
+            {
+                currentAim = gameObject.transform.TransformPosition(new Vector3(0, 0, 6));
+                isAiming = false;
+            }
+        }
+
+        Vector3 input;
+        float rotation;
+        public void InputMeka(Vector3 input, float rotation, Target target)
+        {
+            this.input = input;
+            this.rotation = rotation;
+            targetAim = target;
+        }
+
+        private void SpeedControl(float deltaTime)
+        {
             gameObject.transform.rotation.Y += rotation * 100 * deltaTime;
             float acceleration = isFlying ? airAcceleration : groundAcceleration;
             float deceleration = isFlying ? airDeceleration : groundDeceleration;
@@ -332,8 +416,74 @@ namespace GameEngine
             if (speed.Z > maxSpeed) { speed.Z = maxSpeed; }
             else if (speed.Z < -maxSpeed) { speed.Z = -maxSpeed; }
 
-            if(speed.Y > maxLiftSpeed) { speed.Y = maxLiftSpeed;}
-            else if(speed.Y < -maxFallSpeed) { speed.Y = -maxFallSpeed;}
+            if (speed.Y > maxLiftSpeed) { speed.Y = maxLiftSpeed; }
+            else if (speed.Y < -maxFallSpeed) { speed.Y = -maxFallSpeed; }
+        }
+
+        float margin = 0.5f;
+        public void CheckFloor()
+        {
+            bool floor = false;
+            Vector3 position;
+            Physics.RaycastHit hit;
+            for (int i = -1; i < 4 && speed.Y <= 0 && !floor; i++)
+            {
+                position = new Vector3(i % 2 == 0 ? -margin : margin, 0, i >= 2 ? -margin : margin);
+                floor = Physics.Raycast(gameObject.transform.TransformPosition(i!=-1?position:Vector3.Zero), -Vector3.UnitY, 0.1f, out hit);
+                if (floor)
+                {
+                    Rigidbody rigidbody = hit.transform.GetGameObject().GetComponent<Rigidbody>();
+                    if (rigidbody != null)
+                    {
+                        gameObject.transform.position.Y -= hit.distance;
+                        speed.Y = 0;
+                        isFlying = false;
+                    }
+                    else
+                    {
+                        floor = false;
+                    }
+                }
+            }
+
+            if (!floor || speed.Y > 0)
+            {
+                isFlying = true;
+            }
+        }
+
+        Vector3 enterPosition;
+        Vector3 enterDirection;
+        public override void OnCollisionEnter(Physics.Collision collision)
+        {
+            GameObject go = collision.transform.GetGameObject();
+            Projectile p = go.GetComponent<Projectile>();
+            if (p != null)
+            {
+            }
+            else if (collision.rigidbody.isKinematic || go.@static){
+                float deltaTime = lastDeltaTime > 0.01f ? lastDeltaTime : 0.01f;
+
+                enterDirection = speed != Vector3.Zero ?Vector3.Normalize(speed) : Vector3.Zero;
+                enterPosition = gameObject.transform.position - gameObject.transform.TransformDirection(enterDirection) * 0.1f * (deltaTime);
+                Console.WriteLine(enterPosition);
+            }
+            
+        }
+
+        public override void OnCollisionStay(Physics.Collision collision)
+        {
+            GameObject go = collision.transform.GetGameObject();
+            Projectile p = go.GetComponent<Projectile>();
+            if (p != null)
+            {
+            }
+            else if (collision.rigidbody.isKinematic || go.@static)
+            {
+                
+                gameObject.transform.position = enterPosition;
+                enterPosition -= gameObject.transform.TransformDirection(enterDirection) * 0.01f;
+            }
         }
     }
 }
