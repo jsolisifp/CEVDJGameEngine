@@ -1,0 +1,8 @@
++Sistema de Presets/Blueprints para guardar e cargar Componentes Individuales y GameObjects Individualemnte o en Grupo
++Utilizar el sistema anterior en varios componentes Para que se puedan cargar de forma modular.
++Implementar Hud
++Implementar los sonidos en los sistemas
++Sistemas de IAs simples para los enemigos.
++Importar mas modelos de mekas y armas del tinkercad y asignarles stats
++Implementar elementos de incio/final del nivel y elementos que dependa de condiciones e interactuables
++Hacer nivel de prueba
