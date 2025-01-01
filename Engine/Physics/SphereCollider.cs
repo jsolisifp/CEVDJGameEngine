@@ -21,6 +21,7 @@ namespace GameEngine
 
         public override void Stop()
         {
+            if(!started) { return; }
             Physics.UnregisterCollider(index);
 
             started = false;

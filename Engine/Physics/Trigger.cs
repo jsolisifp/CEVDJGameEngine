@@ -11,7 +11,7 @@ namespace GameEngine
 
         BodyHandle handle;
         StaticHandle staticHandle;
-
+        bool isStarted;
         public override void Start()
         {
             boxCollider = gameObject.GetComponent<BoxCollider>();
@@ -39,7 +39,7 @@ namespace GameEngine
                                               Vector3.Zero, Vector3.Zero, true,
                                               colliderIndex, colliderType, owner);
             }
-
+            isStarted = true;
         }
 
         public override void FixedUpdate(float deltaTime)
@@ -52,8 +52,7 @@ namespace GameEngine
 
         public override void Stop()
         {
-            if (boxCollider == null && sphereCollider == null) { return; }
-
+            if (boxCollider == null && sphereCollider == null || !isStarted) { return; }
             if (gameObject.@static)
             {
                 Physics.UnregisterStaticBody(staticHandle);
@@ -62,7 +61,7 @@ namespace GameEngine
             {
                 Physics.UnregisterNonStaticBody(handle);
             }
-
+            isStarted = false;
         }
     }
 

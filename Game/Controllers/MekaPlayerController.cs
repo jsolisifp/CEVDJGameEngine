@@ -135,7 +135,6 @@ namespace GameEngine
          
         Vector3 input;
         float rotation;
-        float fLastPressed;
         float ctrlLastPressed;
         private void ControlMeka(float deltaTime)
         {
@@ -155,14 +154,16 @@ namespace GameEngine
             else if (Input.IsKeyPressed(Key.E)) { rotation = -1; }
             else { rotation = 0; }
 
-            if (Input.IsKeyPressed(Key.F) && fLastPressed > 0.5) { meka.isAiming = !meka.isAiming; fLastPressed = 0; }
-            else fLastPressed += deltaTime; 
 
-            if (Input.IsKeyPressed(Key.ControlLeft) && ctrlLastPressed > 0.5) { meka.isTargetLock = !meka.isTargetLock; ctrlLastPressed = 0; }
+            if (Input.IsKeyPressed(Key.J)) meka.Shoot(0);
+
+            if (Input.IsKeyPressed(Key.K)) meka.Shoot(1);
+
+            if (Input.IsKeyPressed(Key.ControlLeft) && ctrlLastPressed > 0.4) { meka.isTargetLock = !meka.isTargetLock; ctrlLastPressed = 0; }
             else ctrlLastPressed += deltaTime;
 
 
-            meka.InputMeka(input, rotation, currentTarget);
+            meka.InputMovement(input, rotation, currentTarget);
 
         }
 

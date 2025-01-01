@@ -134,6 +134,13 @@ namespace GameEngine
 
         }
 
+        public override void Start()
+        {
+            int teamId = hitBox.GetGameObject().GetComponent<Target>().teamId;
+            if(leftWeapon != null) leftWeapon.SetTeamId(teamId);
+            if(rightWeapon != null) rightWeapon.SetTeamId(teamId);
+        }
+
         Vector3 lookAtPosition;
         float lastDeltaTime;
         public override void Update(float deltaTime)
@@ -229,14 +236,21 @@ namespace GameEngine
                 
             }
 
-            if (isAiming)
+            if (isAiming && leftWeapon != null && !leftWeapon.isReloading)
             {
                 transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position), up);
-                transforms[2].LookAt(transforms[2].position - (currentAim - transforms[2].position), up);
             }
             else
             {
                 transforms[1].LookAt(transforms[1].position - (transforms[0].TransformPosition(armsRestingRotation) - transforms[1].position), up);
+            }
+
+            if (isAiming && rightWeapon != null && !rightWeapon.isReloading)
+            {
+                transforms[2].LookAt(transforms[2].position - (currentAim - transforms[2].position), up);
+            }
+            else
+            {
                 rightArmRestingRotation = armsRestingRotation;
                 rightArmRestingRotation.X = -armsRestingRotation.X;
                 transforms[2].LookAt(transforms[2].position - (transforms[0].TransformPosition(rightArmRestingRotation) - transforms[2].position), up);
@@ -356,11 +370,17 @@ namespace GameEngine
 
         Vector3 input;
         float rotation;
-        public void InputMeka(Vector3 input, float rotation, Target target)
+        public void InputMovement(Vector3 input, float rotation, Target target)
         {
             this.input = input;
             this.rotation = rotation;
             targetAim = target;
+        }
+
+        public void Shoot(int weapon)
+        {
+            if (weapon == 0) leftWeapon.Shoot();
+            else rightWeapon.Shoot();
         }
 
         private void SpeedControl(float deltaTime)
@@ -432,8 +452,10 @@ namespace GameEngine
                 floor = Physics.Raycast(gameObject.transform.TransformPosition(i!=-1?position:Vector3.Zero), -Vector3.UnitY, 0.1f, out hit);
                 if (floor)
                 {
-                    Rigidbody rigidbody = hit.transform.GetGameObject().GetComponent<Rigidbody>();
-                    if (rigidbody != null)
+                    GameObject go = hit.transform.GetGameObject();
+                    Rigidbody rigidbody = go.GetComponent<Rigidbody>();
+                    Projectile p = go.GetComponent<Projectile>();
+                    if (rigidbody != null && p==null)
                     {
                         gameObject.transform.position.Y -= hit.distance;
                         speed.Y = 0;
@@ -458,15 +480,13 @@ namespace GameEngine
         {
             GameObject go = collision.transform.GetGameObject();
             Projectile p = go.GetComponent<Projectile>();
-            if (p != null)
-            {
-            }
-            else if (collision.rigidbody.isKinematic || go.@static){
+            if (p != null) return;
+            if (collision.rigidbody.isKinematic || go.@static){
                 float deltaTime = lastDeltaTime > 0.01f ? lastDeltaTime : 0.01f;
 
                 enterDirection = speed != Vector3.Zero ?Vector3.Normalize(speed) : Vector3.Zero;
                 enterPosition = gameObject.transform.position - gameObject.transform.TransformDirection(enterDirection) * 0.1f * (deltaTime);
-                Console.WriteLine(enterPosition);
+                
             }
             
         }
@@ -475,15 +495,18 @@ namespace GameEngine
         {
             GameObject go = collision.transform.GetGameObject();
             Projectile p = go.GetComponent<Projectile>();
-            if (p != null)
-            {
-            }
-            else if (collision.rigidbody.isKinematic || go.@static)
+            if (p != null) return ;
+            if (collision.rigidbody.isKinematic || go.@static)
             {
                 
                 gameObject.transform.position = enterPosition;
                 enterPosition -= gameObject.transform.TransformDirection(enterDirection) * 0.01f;
             }
+        }
+
+        public void Damage(int damage)
+        {
+            hp-=damage;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace GameEngine
 
         public override void Update(float deltaTime)
         {
-            meka.InputMeka(input, rotation, null);
+            meka.InputMovement(input, rotation, null);
         }
     }
 }

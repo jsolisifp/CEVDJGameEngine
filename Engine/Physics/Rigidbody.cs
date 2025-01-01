@@ -29,7 +29,7 @@ namespace GameEngine
         bool isStaticInitial;
         bool isKinematicPrevious;
 
-
+        bool isStarted;
         public override void Start()
         {
             boxCollider = gameObject.GetComponent<BoxCollider>();
@@ -65,6 +65,7 @@ namespace GameEngine
 
             isStaticInitial = gameObject.@static;
             isKinematicPrevious = isKinematic;
+            isStarted = true;
         }
 
         bool turnedToKinematic;
@@ -178,8 +179,8 @@ namespace GameEngine
 
         public override void Stop()
         {
-            if (boxCollider == null && sphereCollider == null) { return; }
-
+            if (boxCollider == null && sphereCollider == null || !isStarted) { return; }
+            
             if(isStaticInitial)
             {
                 Physics.UnregisterStaticBody(staticHandle);
@@ -188,7 +189,7 @@ namespace GameEngine
             {
                 Physics.UnregisterNonStaticBody(handle);
             }
-
+            isStarted = false;
         }
 
 

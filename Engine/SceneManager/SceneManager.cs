@@ -119,7 +119,8 @@ namespace GameEngine
             MekaPlayerController mekaControllerC;
             Target targetC;
             TargetingZone targetingZoneC;
-            SimpleController simpleControllerC; 
+            SimpleController simpleControllerC;
+            Projectile projectileC;
 
             go = new GameObject();
             go.name = "DirectionalLight";
@@ -304,6 +305,35 @@ namespace GameEngine
             targetC.mekaTransform = mekaC.GetGameObject().transform;
 
             go.AddComponent(targetC);
+
+            scene.AddGameObject(go);
+
+            go = new GameObject();
+            go.name = "Proyectil";
+            go.AddComponent(new Transform());
+
+            rendererC = new Renderer();
+            rendererC.modelId = "UnitBox.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Yellow.png";
+
+            go.AddComponent(rendererC);
+
+            boxC = new BoxCollider();
+            boxC.size = new Vector3(1, 1, 1);
+
+            go.AddComponent(boxC);
+
+            rigidC = new Rigidbody();
+            rigidC.isKinematic = true;
+
+            go.AddComponent(rigidC);
+
+            projectileC = new Projectile();
+            projectileC.teamId = 1;
+            projectileC.speed = 1;
+
+            go.AddComponent(projectileC);
 
             scene.AddGameObject(go);
 

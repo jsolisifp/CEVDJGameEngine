@@ -29,5 +29,10 @@ namespace GameEngine
             if (meka == null) return;
             meka.OnCollisionStay(collision);
         }
+
+        public void Damage(int damage)
+        {
+            meka.Damage(damage);
+        }
     }
 }
