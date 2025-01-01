@@ -1,9 +1,11 @@
 ﻿using ImGuiNET;
 using Silk.NET.Input;
 using Silk.NET.Maths;
+using Silk.NET.OpenAL;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Numerics;
 using System.Reflection;
@@ -61,6 +63,7 @@ namespace GameEngine
         static Vector2 cameraMousePreviousPosition;
         static bool editorView;
 
+        static string[] atenuationTypes;
         public static void Init(IWindow _window, IInputContext _input, GL _gl)
         {
             controller = new ImGuiController(_gl, _window, _input);
@@ -102,7 +105,7 @@ namespace GameEngine
 
             cameraMousePreviousPosition = Input.GetMousePosition();
 
-
+            atenuationTypes = Enum.GetNames(DistanceModel.None.GetType());
         }
 
         public static void Update(float deltaTime)
@@ -576,6 +579,21 @@ namespace GameEngine
                 ImGui.EndMenu();
             }
 
+            if (ImGui.BeginMenu("Sound Attenuation"))
+            {
+                DistanceModel atenuation;
+                for (int i = 0; i < atenuationTypes.Length; i++)
+                {
+                    atenuation = (DistanceModel)Enum.Parse(DistanceModel.None.GetType(), atenuationTypes[i]);
+                    if (ImGui.MenuItem(atenuationTypes[i], Audio.GetAtenuation() != atenuation))
+                    {
+                        Audio.SetAtenuation(atenuation);
+                    }
+                }
+
+                ImGui.EndMenu();
+            }
+
             if (ImGui.BeginMenu("Help"))
             {
                 if (ImGui.MenuItem("About", ""))
@@ -729,6 +747,40 @@ namespace GameEngine
                 if (ImGui.CollapsingHeader(t.Name +" "+ i))
                 {
                     ImGui.Checkbox("active", ref c.active);
+
+                    if (c.GetType().Name == "AudioSource")
+                    {
+                        AudioSource audio = (AudioSource)c;
+                        ImGui.BeginGroup();
+                        ImGui.BeginDisabled(audio.GetClipState() != ClipState.stoped);
+                        if (ImGui.Button("Play"))
+                        {
+                            audio.PlayAudio();
+                        }
+                        ImGui.EndDisabled();
+                        ImGui.SameLine();
+                        ImGui.BeginDisabled(!audio.GetSourceStarted() || audio.GetClipState() == ClipState.stoped);
+                        if (ImGui.Button("Stop"))
+                        {
+                            audio.StopAudio();
+                        }
+                        ImGui.EndDisabled();
+                        ImGui.SameLine();
+                        ImGui.BeginDisabled(!audio.GetSourceStarted() || audio.GetClipState() != ClipState.playing);
+                        if (ImGui.Button("Pause"))
+                        {
+                            audio.PauseAudio();
+                        }
+                        ImGui.EndDisabled();
+                        ImGui.SameLine();
+                        ImGui.BeginDisabled(!audio.GetSourceStarted() || audio.GetClipState() != ClipState.paused);
+                        if (ImGui.Button("Resume"))
+                        {
+                            audio.ResumeAudio();
+                        }
+                        ImGui.EndDisabled();
+                        ImGui.EndGroup();
+                    }
 
                     FieldInfo[] fields = t.GetFields();
 

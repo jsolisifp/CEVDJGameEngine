@@ -117,6 +117,7 @@ namespace GameEngine
             SceneManager.Init(window);
             Render.Init(window);
             Physics.Init(window);
+            Audio.Init();
 
             Assets.LoadAssets();
             SceneManager.Start();
@@ -150,6 +151,8 @@ namespace GameEngine
             Editor.Finish();
             SceneManager.Stop();
             Assets.UnloadAssets();
+
+            Audio.Finish();
             Physics.Finish();
             Render.Finish();
             SceneManager.Finish();
