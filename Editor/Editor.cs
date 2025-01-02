@@ -31,18 +31,21 @@ namespace GameEngine
         static List<GameObject> selectedGameObjectsList;
         static string selectedAssetId;
 
+        static Component presetSaveComponent;
 
         static bool modalAboutOpened;
         static bool modalSaveSceneAs;
         static bool modalAlertOpened;
         static bool modalPickTransformOpened;
         static bool modalPickWeaponOpened;
+        static bool modalSavePresetAs;
 
         static bool openSaveSceneModal;
         static bool openAboutModal;
         static bool openAlertModal;
         static bool openPickTransformModal;
         static bool openPickWeaponModal;
+        static bool openSavePresetModal;
 
         static string modalFilenameText;
         static string modalAlertText;
@@ -94,6 +97,7 @@ namespace GameEngine
             modalAlertOpened = true;
             modalPickTransformOpened = true;
             modalPickWeaponOpened = true;
+            modalSavePresetAs = true;
 
             cameraPosition = new Vector3(0, 5, -10);
             cameraRotation = new Vector3(0, 180, 0);
@@ -333,6 +337,38 @@ namespace GameEngine
                 ImGui.EndPopup();
             }
 
+            if (ImGui.BeginPopupModal("Save preset as", ref modalSavePresetAs, defaultWindowFlags))
+            {
+                ImGui.InputText("Filename", ref modalFilenameText, maxNameLength);
+                if (ImGui.Button("Accept"))
+                {
+                    string id = modalFilenameText.Trim();
+                    if (presetSaveComponent == null && !id.EndsWith(".preset")) id += ".preset";
+                    else if (presetSaveComponent != null && !id.EndsWith(".component")) id += ".component";
+
+                    if (presetSaveComponent != null) SceneSerializer.SerializeComponent(presetSaveComponent, Assets.GetAssetsPath() + "\\" + id);
+                    else 
+                    {
+                        Scene scene = new Scene();
+                        scene.name = id;
+                        scene.GetGameObjects().AddRange(selectedGameObjectsList);
+                        SceneSerializer.Serialize(scene, Assets.GetAssetsPath() + "\\" + id);
+                    }
+
+                    if (!Assets.IsAssetLoaded(id))
+                    { Assets.LoadAsset(id); }
+                    else { Assets.ReloadAsset(id); }
+
+                    ImGui.CloseCurrentPopup();
+                }
+
+                if (ImGui.Button("Cancel"))
+                {
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.EndPopup();
+            }
+
             ///////////////// Menu bar ////////////////////
 
             ImGui.BeginMainMenuBar();
@@ -508,8 +544,63 @@ namespace GameEngine
                 ImGui.EndMenu();
             }
 
+            if (ImGui.BeginMenu("Presets"))
+            {
+                if (ImGui.MenuItem("Save Selection as Preset", selectedGameObjectsList.Count > 0))
+                {
+                    modalFilenameText = selectedGameObjectsList.Count == 1 ? selectedGameObjectsList[0].name : "GameObjects";
+                    presetSaveComponent = null;
+                    openSavePresetModal = true;
+                }
 
-            if(ImGui.BeginMenu("Assets"))
+                if (ImGui.BeginMenu("Save Component as Preset", selectedGameObjectsList.Count == 1))
+                {
+                    List<Component> components = selectedGameObjectsList[0].GetComponents();
+                    Component c;
+                    for (int i = 0; i < components.Count; i++)
+                    {
+                        c = components[i];
+                        if (ImGui.MenuItem(i + "-" + c.GetType().Name))
+                        {
+                            modalFilenameText = c.GetType().Name;
+                            presetSaveComponent = c;
+                            openSavePresetModal = true;
+                        }
+                    }
+
+                    ImGui.EndMenu();
+                }
+
+                if (ImGui.MenuItem("Spawn Preset", selectedAssetId != null &&
+                    (selectedAssetId.EndsWith(".preset") || selectedAssetId.EndsWith(".component") && selectedGameObjectsList.Count > 0)))
+                {
+                    Preset preset = Assets.GetLoadedAsset<Preset>(selectedAssetId, false);
+                    Scene scene = SceneManager.GetActiveScene();
+                    if (!preset.isComponent())
+                    {
+                        List<GameObject> gameObjects = preset.GetGameObjectsCopies();
+                        scene.GetGameObjects().AddRange(gameObjects);
+                        for (int i = 0; i < gameObjects.Count; i++)
+                        {
+                            gameObjects[i].Start();
+                        }
+                    }
+                    else
+                    {
+                        Component copy;
+                        for (int i = 0; selectedGameObjectsList.Count > 0; i++)
+                        {
+                            copy = preset.GetComponentCopy();
+                            selectedGameObjectsList[i].AddComponent(copy);
+                            copy.Start();
+                        }
+                    }
+                }
+
+                ImGui.EndMenu();
+            }
+
+            if (ImGui.BeginMenu("Assets"))
             {
                 if(ImGui.MenuItem("Reload all"))
                 {
@@ -594,6 +685,8 @@ namespace GameEngine
                 ImGui.EndMenu();
             }
 
+            
+
             if (ImGui.BeginMenu("Help"))
             {
                 if (ImGui.MenuItem("About", ""))
@@ -634,7 +727,12 @@ namespace GameEngine
                 ImGui.OpenPopup("Save scene as");
             }
 
-            if(openAlertModal)
+            if (openSavePresetModal)
+            {
+                ImGui.OpenPopup("Save preset as");
+            }
+
+            if (openAlertModal)
             {
                 ImGui.OpenPopup("Alert");
             }
@@ -644,6 +742,7 @@ namespace GameEngine
             openAlertModal = false;
             openPickTransformModal = false;
             openPickWeaponModal = false;
+            openSavePresetModal = false;
 
 
         }
@@ -684,7 +783,7 @@ namespace GameEngine
                 {
                     GameObject go = gameObjects[i];
 
-                    if(ImGui.Selectable(go.name, selectedGameObjectsSet.Contains(go)))
+                    if(ImGui.Selectable(i + "-"+go.name, selectedGameObjectsSet.Contains(go)))
                     {
                         if (!ImGui.GetIO().KeyCtrl)
                         {

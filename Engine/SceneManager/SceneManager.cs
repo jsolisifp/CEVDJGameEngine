@@ -24,6 +24,10 @@ namespace GameEngine
             SceneLoader loader = new SceneLoader();
             Assets.RegisterAssetLoader("scene", loader);
 
+            PresetLoader presetLoader = new PresetLoader();
+            Assets.RegisterAssetLoader("preset", presetLoader);
+            Assets.RegisterAssetLoader("component", presetLoader);
+
             window = _window;
 
             defaultScene = CreateDefaultScene();

@@ -87,7 +87,7 @@ namespace GameEngine
                         {
                             valueString = SerializeInt32((Int32)value);
                         }
-                        else if(typeName == "Boolean")
+                        else if (typeName == "Boolean")
                         {
                             valueString = SerializeBool((Boolean)value);
                         }
@@ -291,6 +291,178 @@ namespace GameEngine
             return scene;
 
         }
+
+        public static void SerializeComponent(Component component, string path)
+        {
+            // Write file
+
+            StreamWriter writer = new StreamWriter(path);
+
+            writer.WriteLine("___type:" + component.GetType().Name);
+
+            FieldInfo[] fields = component.GetType().GetFields();
+
+            writer.WriteLine("fields:" + SerializeInt32(fields.Length));
+
+            for (int k = 0; k < fields.Length; k++)
+            {
+                FieldInfo field = fields[k];
+                Type type = field.GetValue(component).GetType();
+                string typeName = type.Name;
+                Object value = field.GetValue(component);
+
+                writer.WriteLine("name:" + field.Name);
+                writer.WriteLine("type:" + type.Name);
+
+                string valueString;
+
+                if (typeName == "String")
+                {
+                    valueString = SerializeString((string)value);
+                }
+                else if (typeName == "String[]")
+                {
+                    valueString = SerializeStringArray((string[])value);
+                }
+                else if (typeName == "Single")
+                {
+                    valueString = SerializeSingle((Single)value);
+                }
+                else if (typeName == "Int32")
+                {
+                    valueString = SerializeInt32((Int32)value);
+                }
+                else if (typeName == "Boolean")
+                {
+                    valueString = SerializeBool((Boolean)value);
+                }
+                else if (typeName == "Vector2")
+                {
+                    Vector2 v = (Vector2)value;
+                    valueString = SerializeSingle(v.X) + "," + SerializeSingle(v.Y);
+                }
+                else if (typeName == "Vector3")
+                {
+                    Vector3 v = (Vector3)value;
+                    valueString = SerializeSingle(v.X) + "," + SerializeSingle(v.Y) + "," + SerializeSingle(v.Z);
+                }
+                else if (typeName == "Vector4")
+                {
+                    Vector4 v = (Vector4)value;
+                    valueString = SerializeSingle(v.X) + "," + SerializeSingle(v.Y) + "," + SerializeSingle(v.Z) + "," + SerializeSingle(v.W);
+                }
+                else
+                {
+                    Console.WriteLine("Warning: Unrecognized field type " + typeName);
+                    valueString = "";
+                }
+
+                writer.WriteLine("value:" + valueString);
+
+            }
+
+
+            writer.Close();
+
+        }
+
+        public static Component DeserializeComponent(string path)
+        {
+            var idToComponent = new Dictionary<int, Component>();
+            var scene = new Scene();
+
+            StreamReader reader = null;
+            string line = "";
+
+
+            line = reader.ReadLine();
+            string typeName = line.Split(':')[1];
+            Type type = Type.GetType("GameEngine." + typeName);
+
+            Component component = (Component)Activator.CreateInstance(type);
+
+
+            line = reader.ReadLine();
+            int numFields = DeserializeInt32(line.Split(':')[1]);
+
+            for (int k = 0; k < numFields; k++)
+            {
+                line = reader.ReadLine();
+
+                string fieldName = line.Split(':')[1];
+
+                line = reader.ReadLine();
+                string fieldTypeName = line.Split(':')[1];
+
+                line = reader.ReadLine();
+                string fieldValueString = line.Split(':')[1];
+
+                FieldInfo field = type.GetField(fieldName);
+                Object value = null;
+
+                if (fieldTypeName == "Single")
+                {
+                    value = DeserializeSingle(fieldValueString);
+                }
+                else if (fieldTypeName == "Int32")
+                {
+                    value = DeserializeInt32(fieldValueString);
+                }
+                else if (fieldTypeName == "Boolean")
+                {
+                    value = DeserializeBool(fieldValueString);
+                }
+                else if (fieldTypeName == "Vector2")
+                {
+                    string[] parts = fieldValueString.Split(',');
+                    value = new Vector2(DeserializeSingle(parts[0]),
+                                        DeserializeSingle(parts[1]));
+                }
+                else if (fieldTypeName == "Vector3")
+                {
+
+                    string[] parts = fieldValueString.Split(',');
+                    value = new Vector3(DeserializeSingle(parts[0]),
+                                        DeserializeSingle(parts[1]),
+                                        DeserializeSingle(parts[2]));
+
+                }
+                else if (fieldTypeName == "Vector4")
+                {
+
+                    string[] parts = fieldValueString.Split(',');
+                    value = new Vector4(DeserializeSingle(parts[0]),
+                                        DeserializeSingle(parts[1]),
+                                        DeserializeSingle(parts[2]),
+                                        DeserializeSingle(parts[3]));
+
+                }
+                else if (fieldTypeName == "String")
+                {
+                    value = fieldValueString;
+                }
+                else if (fieldTypeName == "String[]")
+                {
+                    value = fieldValueString.Split(',');
+                }
+
+                if (value != null)
+                {
+                    field.SetValue(component, value);
+                }
+            }
+
+
+
+            reader.Close();
+
+
+
+            return component;
+
+        }
+
+        
 
         static string SerializeString(string s)
         {
