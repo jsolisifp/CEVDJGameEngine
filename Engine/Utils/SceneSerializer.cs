@@ -371,9 +371,8 @@ namespace GameEngine
             var idToComponent = new Dictionary<int, Component>();
             var scene = new Scene();
 
-            StreamReader reader = null;
+            StreamReader reader = new StreamReader(path);
             string line = "";
-
 
             line = reader.ReadLine();
             string typeName = line.Split(':')[1];

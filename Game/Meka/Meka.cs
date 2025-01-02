@@ -122,7 +122,7 @@ namespace GameEngine
             hitboxOffset = new Vector3(0, 0.5f, 0);
 
             shoulderWeaponOffset = new Vector3(0.7f, 0.6f, 0.05f);
-            shoulderWeaponRotation = new Vector3(-50, 180, 0);
+            shoulderWeaponRotation = new Vector3(1, -1, -1);
 
             torsoOffset = new Vector3(0, 0.8f, 0);
             armsOffset = new Vector3(0.7f, 0.57f, 0);
@@ -287,7 +287,7 @@ namespace GameEngine
             {
                 Transform leftWeapTransform = leftShoulderWeapon.GetTransform();
                 leftWeapTransform.position = transforms[0].TransformPosition(shoulderWeaponOffset);
-                leftWeapTransform.rotation = transforms[0].rotation + rightShoulderWeaponRotation;
+                leftWeapTransform.LookAt(leftWeapTransform.position - (transforms[0].TransformPosition(shoulderWeaponRotation) - leftWeapTransform.position), up);
             }
 
             if (rightShoulderWeapon != null)
@@ -301,6 +301,8 @@ namespace GameEngine
                 Transform rightWeapTransform = rightShoulderWeapon.GetTransform();
                 rightWeapTransform.position = transforms[0].TransformPosition(rightShoulderWeaponOffset);
                 rightWeapTransform.rotation = transforms[0].rotation + rightShoulderWeaponRotation;
+                rightWeapTransform.LookAt(rightWeapTransform.position - (transforms[0].TransformPosition(rightShoulderWeaponRotation) - rightWeapTransform.position), up);
+
             }
 
             if (!leftLeverIsGrabbed)

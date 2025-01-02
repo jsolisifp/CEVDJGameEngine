@@ -588,7 +588,7 @@ namespace GameEngine
                     else
                     {
                         Component copy;
-                        for (int i = 0; selectedGameObjectsList.Count > 0; i++)
+                        for (int i = 0; i < selectedGameObjectsList.Count; i++)
                         {
                             copy = preset.GetComponentCopy();
                             selectedGameObjectsList[i].AddComponent(copy);

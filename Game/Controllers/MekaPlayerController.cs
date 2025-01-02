@@ -135,6 +135,7 @@ namespace GameEngine
          
         Vector3 input;
         float rotation;
+        float lastTargetChange;
         float uLastPressed;
         float iLastPressed;
         float ctrlLastPressed;
@@ -152,9 +153,19 @@ namespace GameEngine
             if (Input.IsKeyPressed(Key.Space)) { input.Y = 1; }
             else { input.Y = 0; }
 
-            if (Input.IsKeyPressed(Key.Q)) { rotation = 1; }
-            else if (Input.IsKeyPressed(Key.E)) { rotation = -1; }
-            else { rotation = 0; }
+            if (meka.isAiming && meka.isTargetLock)
+            {
+                rotation = 0;
+                if (Input.IsKeyPressed(Key.Q) && lastTargetChange > 0.4) { ChangeTarget(-1); lastTargetChange = 0; }
+                else if (Input.IsKeyPressed(Key.E) && lastTargetChange > 0.4) { ChangeTarget(1); lastTargetChange = 0; }
+                else lastTargetChange += deltaTime; 
+            }
+            else
+            {
+                if (Input.IsKeyPressed(Key.Q)) { rotation = 1; }
+                else if (Input.IsKeyPressed(Key.E)) { rotation = -1; }
+                else { rotation = 0; }
+            }
 
             if (Input.IsKeyPressed(Key.J)) meka.Shoot(0);
             if (Input.IsKeyPressed(Key.K)) meka.Shoot(1);
@@ -168,6 +179,17 @@ namespace GameEngine
             else ctrlLastPressed += deltaTime;
 
             meka.InputMovement(input, rotation, currentTarget);
+        }
+
+        private void ChangeTarget(int change)
+        {
+            if (targets.Count <= 1 || currentTarget == null) return;
+            int num = targets.IndexOf(currentTarget) + change;
+            if (num < 0) num = targets.Count-1;
+            else if (num >= targets.Count) num = 0;
+
+            currentTarget = targets[num];
+
         }
 
         private void TargetingSystem()
