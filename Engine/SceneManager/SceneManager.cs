@@ -212,6 +212,12 @@ namespace GameEngine
             weaponC = new Weapon();
             go.AddComponent(weaponC);
             mekaC.rightWeapon = weaponC;
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.leftShoulderWeapon = weaponC;
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.rightShoulderWeapon = weaponC;
 
             scene.AddGameObject(go);
 
@@ -281,7 +287,15 @@ namespace GameEngine
             weaponC = new Weapon();
             go.AddComponent(weaponC);
             mekaC.rightWeapon = weaponC;
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.leftShoulderWeapon = weaponC;
+            weaponC = new Weapon();
+            go.AddComponent(weaponC);
+            mekaC.rightShoulderWeapon = weaponC;
+
             mekaC.textures[4] = "Red.png";
+
             simpleControllerC = new SimpleController();
             simpleControllerC.mekaTransform=go.transform;
             simpleControllerC.input=-Vector3.UnitZ;

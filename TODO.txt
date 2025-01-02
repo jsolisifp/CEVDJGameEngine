@@ -1,4 +1,3 @@
-+Utilizar el sistema anterior en varios componentes Para que se puedan cargar de forma modular.
 +Implementar Hud
 +Implementar los sonidos en los sistemas
 +Sistemas de IAs simples para los enemigos.

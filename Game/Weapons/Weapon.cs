@@ -12,27 +12,37 @@ namespace GameEngine
         public string name;
 
         public Vector3 canonOffset = new Vector3(0,0.1f,0.25f);
-        public Vector3 projectileScale = new Vector3(0.1f, 0.1f, 0.3f);
+        public bool showCanonPosition;
 
         public string texture;
         public string shader;
         public string model;
 
+        public int projectilesPerShoot = 1;
         public int maxAmmo = 10;
         public int ammo = 10;
+        public float spread = 15;
+
+        public string projectilePreset = "Proyectil.preset";
+
         public int damage = 5;
+        public int explosionDamage = 0;
         public int projectileSpeed = 100;
         public float fireRate = 0.1f;
-        float time;
 
         public bool isReloading;
         public float reloadTime = 2;
+
+        
+       
+        float time;
+        Preset projectile;
 
         Transform transform;
         int teamId;
         bool shoot;
         Meka meka;
-        
+        Random r;
         public Weapon()
         {
             name = "Pistola";
@@ -58,24 +68,38 @@ namespace GameEngine
         {
             meka = gameObject.GetComponent<Meka>();
             time += fireRate;
+            r = new Random();
+            projectile = Assets.GetLoadedAsset<Preset>(projectilePreset);
+            if (projectile != null) projectile.PrepareCopy();
         }
 
         public override void Update(float deltaTime)
         {
             if (shoot && time > fireRate && !isReloading && meka.isAiming)
             {
-                ammo--;
-                Transform t = new Transform();
-                t.position = transform.TransformPosition(canonOffset);
-                t.rotation = transform.rotation;
-                t.scale = projectileScale;
-                Renderer r = new Renderer();
-                r.modelId = "UnitBox.obj";
-                r.shaderId = "Default.shader";
-                r.textureId = "Yellow.png";
+                for (int i = 0; i < projectilesPerShoot; i++)
+                {
+                    GameObject go = projectile.GetGameObjectsCopies().First();
+                    go.transform.position = transform.TransformPosition(canonOffset);
+                    go.transform.rotation = transform.rotation;
+                    if(spread > 0)
+                    {
+                        go.transform.rotation.X += RandUtils.Range(r, -spread, +spread);
+                        go.transform.rotation.Y += RandUtils.Range(r, -spread, +spread);
+                        go.transform.rotation.Z += RandUtils.Range(r, -spread, +spread);
+                    }
 
-                Projectile.CreateProjectile(t, r, Physics.ColliderType.box, teamId, damage, projectileSpeed, true,
-                    new Vector3(0,0,0.15f),"Default.shader", "Yellow.png", 0, new Vector3(0.25f), 0.25f);
+                    Projectile p = go.GetComponent<Projectile>();
+                    p.damage = damage;
+                    p.explosionDamage = explosionDamage;
+                    p.speed = projectileSpeed;
+                    p.teamId = teamId;
+
+                    SceneManager.GetActiveScene().AddGameObject(go);
+                    go.Start();
+                }
+
+                ammo--;
                 time = 0;
                 if(ammo <= 0) isReloading = true;
             }
@@ -94,6 +118,16 @@ namespace GameEngine
             if (m != null && s != null && t != null)
             {
                 GameEngine.Render.DrawModel(transform.position,transform.rotation,transform.scale,m,s,t);
+            }
+
+            if (showCanonPosition) {
+                m = Assets.GetLoadedAsset<Model>("UnitBox.obj");
+                s = Assets.GetLoadedAsset<Shader>(shader);
+                t = Assets.GetLoadedAsset<Texture>("Purple.png");
+                if (m != null && s != null && t != null)
+                {
+                    GameEngine.Render.DrawModel(transform.TransformPosition(canonOffset), transform.rotation, new Vector3(0.2f), m, s, t);
+                }
             }
         }
 

@@ -135,6 +135,8 @@ namespace GameEngine
          
         Vector3 input;
         float rotation;
+        float uLastPressed;
+        float iLastPressed;
         float ctrlLastPressed;
         private void ControlMeka(float deltaTime)
         {
@@ -154,17 +156,18 @@ namespace GameEngine
             else if (Input.IsKeyPressed(Key.E)) { rotation = -1; }
             else { rotation = 0; }
 
-
             if (Input.IsKeyPressed(Key.J)) meka.Shoot(0);
-
             if (Input.IsKeyPressed(Key.K)) meka.Shoot(1);
+
+            if (Input.IsKeyPressed(Key.U) && uLastPressed > 0.4) { meka.SwapWeapon(0); uLastPressed = 0; }
+            else uLastPressed += deltaTime;
+            if (Input.IsKeyPressed(Key.I) && iLastPressed > 0.4) { meka.SwapWeapon(1); iLastPressed = 0; }
+            else iLastPressed += deltaTime;
 
             if (Input.IsKeyPressed(Key.ControlLeft) && ctrlLastPressed > 0.4) { meka.isTargetLock = !meka.isTargetLock; ctrlLastPressed = 0; }
             else ctrlLastPressed += deltaTime;
 
-
             meka.InputMovement(input, rotation, currentTarget);
-
         }
 
         private void TargetingSystem()

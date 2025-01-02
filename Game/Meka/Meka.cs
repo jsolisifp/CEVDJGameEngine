@@ -12,9 +12,13 @@ namespace GameEngine
 {
     internal class Meka : Component
     {
+        
+        public Transform hitBox;
+
         public Weapon leftWeapon;
         public Weapon rightWeapon;
-        public Transform hitBox;
+        public Weapon leftShoulderWeapon;
+        public Weapon rightShoulderWeapon;
 
         public int hp;
         public int maxHp;
@@ -59,6 +63,10 @@ namespace GameEngine
 
         public Vector3 hitboxOffset;
 
+        public Vector3 shoulderWeaponOffset;
+        public Vector3 shoulderWeaponRotation;
+
+
         //Offset relativos de los componentes
         public Vector3 torsoOffset;
         public Vector3 armsOffset; //BrazoIzquierdo, el derecho simplemente invertimos el offsetX
@@ -71,12 +79,12 @@ namespace GameEngine
         public string shader;
         public string[] textures; //0 Torso, 1 BrazoIzq, 2 BrazoDer, 3 Piernas, 4 Piloto, 5 PalancaIzq, 6 PalancaDer
 
-
-
         Vector3 rightArmOffset;
         Vector3 rightLeverOffset;
         Vector3 rightArmRestingRotation;
 
+        Vector3 rightShoulderWeaponOffset;
+        Vector3 rightShoulderWeaponRotation;
 
         Transform[] transforms; //0 Torso, 1 BrazoIzq, 2 BrazoDer, 3 Piernas, 4 Piloto, 5 PalancaIzq, 6 PalancaDer
 
@@ -113,6 +121,9 @@ namespace GameEngine
 
             hitboxOffset = new Vector3(0, 0.5f, 0);
 
+            shoulderWeaponOffset = new Vector3(0.7f, 0.6f, 0.05f);
+            shoulderWeaponRotation = new Vector3(-50, 180, 0);
+
             torsoOffset = new Vector3(0, 0.8f, 0);
             armsOffset = new Vector3(0.7f, 0.57f, 0);
             pilotOffset = new Vector3(0, 0.4f, -0.15f);
@@ -139,6 +150,8 @@ namespace GameEngine
             int teamId = hitBox.GetGameObject().GetComponent<Target>().teamId;
             if(leftWeapon != null) leftWeapon.SetTeamId(teamId);
             if(rightWeapon != null) rightWeapon.SetTeamId(teamId);
+            if(leftShoulderWeapon != null) leftShoulderWeapon.SetTeamId(teamId);
+            if (rightShoulderWeapon != null) rightShoulderWeapon.SetTeamId(teamId);
         }
 
         Vector3 lookAtPosition;
@@ -270,6 +283,26 @@ namespace GameEngine
                 rightWeapTransform.rotation = transforms[2].rotation;
             }
 
+            if (leftShoulderWeapon != null)
+            {
+                Transform leftWeapTransform = leftShoulderWeapon.GetTransform();
+                leftWeapTransform.position = transforms[0].TransformPosition(shoulderWeaponOffset);
+                leftWeapTransform.rotation = transforms[0].rotation + rightShoulderWeaponRotation;
+            }
+
+            if (rightShoulderWeapon != null)
+            {
+                rightShoulderWeaponOffset = shoulderWeaponOffset;
+                rightShoulderWeaponOffset.X = -shoulderWeaponOffset.X;
+
+                rightShoulderWeaponRotation = shoulderWeaponRotation;
+                rightShoulderWeaponRotation.X = -shoulderWeaponRotation.X;
+
+                Transform rightWeapTransform = rightShoulderWeapon.GetTransform();
+                rightWeapTransform.position = transforms[0].TransformPosition(rightShoulderWeaponOffset);
+                rightWeapTransform.rotation = transforms[0].rotation + rightShoulderWeaponRotation;
+            }
+
             if (!leftLeverIsGrabbed)
             {
                 transforms[5].LookAt(transforms[0].TransformPosition(leverOffset - Meka.vectorUp), Vector3.UnitZ);
@@ -381,6 +414,21 @@ namespace GameEngine
         {
             if (weapon == 0) leftWeapon.Shoot();
             else rightWeapon.Shoot();
+        }
+        public void SwapWeapon(int weapon)
+        {
+            Weapon tmp;
+            if (weapon == 0) 
+            { 
+                tmp = leftWeapon;
+                leftWeapon = leftShoulderWeapon;
+                leftShoulderWeapon = tmp;
+            }
+            else {
+                tmp = rightWeapon;
+                rightWeapon = rightShoulderWeapon;
+                rightShoulderWeapon = tmp;
+            };
         }
 
         private void SpeedControl(float deltaTime)

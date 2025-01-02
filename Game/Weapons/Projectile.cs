@@ -28,7 +28,7 @@ namespace GameEngine
         Vector3 direction;
         bool hit;
         float time;
-        float lifetime = 5;
+        float lifetime = 3;
         public Projectile()
         {
             createsExplosion = false;
@@ -63,7 +63,6 @@ namespace GameEngine
 
         public override void Stop()
         {
-            if (!hit) return;
             List<Component> components = gameObject.GetComponents();
             for (int i = 0; i < components.Count; i++)
             {
@@ -78,50 +77,6 @@ namespace GameEngine
                     gameObject.transform.TransformPosition(explosionOriginOffset), teamId, explosionDamage,
                     explosionDuration, explosionFinalScale, explosionShader, explosionTexture);
             }
-        }
-        static int projectileCount = 0;
-        public static void CreateProjectile(Transform transform, Renderer renderer, Physics.ColliderType colliderType, int teamId, int damage, float speed, bool createsExplosion, Vector3 explosionOriginOffset, string explosionShader, string explosionTexture, int explosionDamage, Vector3 explosionFinalScale, float explosionDuration)
-        {
-            GameObject go = new GameObject();
-            go.name = "Projectile "+projectileCount++;
-            go.AddComponent(transform);
-            go.AddComponent(renderer);
-
-            if (colliderType == Physics.ColliderType.box)
-            {
-                BoxCollider boxC = new BoxCollider();
-                boxC.size = new Vector3(1, 1, 1);
-
-                go.AddComponent(boxC);
-            }
-            else
-            {
-                SphereCollider sphereC = new SphereCollider();
-                sphereC.radius = 0.5f;
-
-                go.AddComponent(sphereC);
-            }
-
-            Rigidbody rigidC = new Rigidbody();
-            rigidC.isKinematic = true;
-
-            go.AddComponent(rigidC);
-
-            Projectile p = new Projectile();
-            p.teamId = teamId;
-            p.damage = damage;
-            p.speed = speed;
-            p.createsExplosion = createsExplosion;
-            p.explosionOriginOffset = explosionOriginOffset;
-            p.explosionShader = explosionShader;
-            p.explosionTexture = explosionTexture;
-            p.explosionDamage = explosionDamage;
-            p.explosionFinalScale = explosionFinalScale;
-            p.explosionDuration = explosionDuration;
-            go.AddComponent(p);
-
-            SceneManager.GetActiveScene().AddGameObject(go);
-            go.Start();
         }
     }
 }
