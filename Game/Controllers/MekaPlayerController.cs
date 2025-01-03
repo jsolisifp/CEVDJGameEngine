@@ -5,11 +5,15 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using ImGuiNET;
 using Silk.NET.Assimp;
 using Silk.NET.Input;
+using Silk.NET.Maths;
+using Silk.NET.Windowing;
 
 namespace GameEngine
 {
+
     internal class MekaPlayerController : Component, IMekaController
     {
 
@@ -50,6 +54,7 @@ namespace GameEngine
             meka = mekaTransform.GetGameObject().GetComponent<Meka>();
             mekaTarget = meka.hitBox.GetGameObject().GetComponent<Target>();
             targets = new List<Target>();
+            Editor.SetPlayerController(this);
         }
 
 
@@ -224,6 +229,92 @@ namespace GameEngine
         public void RemoveTarget(Target target)
         {
             targets.Remove(target);
+        }
+
+        public void DrawHud(IWindow window)
+        {
+            ImDrawListPtr drawListPtr = ImGui.GetBackgroundDrawList();
+            
+            Vector2 windowSize = new Vector2(window.Size.X, window.Size.Y);
+            //Console.WriteLine("WindowSize1 "+windowSize);
+            uint hudColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 1));
+            uint transparentColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8f, 0.8f, 0.8f, 0.25f));
+            uint hudBackColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.5f, 0.5f, 0.5f, 1));
+            uint lockOnColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8f, 0.8f, 0.8f, 0.75f));
+
+            //HP START
+            drawListPtr.AddRectFilled(new Vector2(0, windowSize.Y), new Vector2(20 + windowSize.X / 8, windowSize.Y - 70), transparentColor, 0.25f);
+
+            int hp = meka.hp;
+            int maxHp = meka.maxHp;
+            string hpString = hp + "";
+            int dif = 4 - hpString.Length;
+            for (int i = 0; i < dif; i++)
+            {
+                hpString = "0" + hpString;
+            }
+            drawListPtr.AddText(ImGui.GetFont(), 30f, new Vector2(10, windowSize.Y - 60), hudColor, "HP");
+            drawListPtr.AddText(ImGui.GetFont(), 40f, new Vector2(windowSize.X / 8 - 75, windowSize.Y - 70), hudColor, hpString);
+
+            drawListPtr.AddRectFilled(new Vector2(10, windowSize.Y - 10), new Vector2(10 + windowSize.X / 8, windowSize.Y - 30), hudBackColor);
+            drawListPtr.AddRectFilled(new Vector2(10, windowSize.Y - 10), new Vector2((10 + windowSize.X / 8) * hp / maxHp, windowSize.Y - 30), hudColor);
+            //HP END
+
+            //AMMO START
+            drawListPtr.AddRectFilled(new Vector2(windowSize.X, windowSize.Y), new Vector2(windowSize.X - 20 - windowSize.X / 8, windowSize.Y - 70), transparentColor, 0.25f);
+            Weapon weapon = meka.leftWeapon;
+            
+            int ammo = weapon.ammo;
+            int maxAmmo = weapon.maxAmmo;
+            string ammoString = ammo + "";
+            dif = 3 - ammoString.Length;
+            for (int i = 0; i < dif; i++)
+            {
+                ammoString = "0" + ammoString;
+            }
+            float percent = weapon.isReloading ? weapon.ReloadPercent() : 1f*ammo/maxAmmo;
+
+            drawListPtr.AddText(ImGui.GetFont(), 25, new Vector2(windowSize.X - 10 - windowSize.X / 8, windowSize.Y - 67), hudColor, ammoString);
+            drawListPtr.AddText(ImGui.GetFont(), 22, new Vector2(windowSize.X - 72, windowSize.Y - 65), hudColor, "Left");
+
+            drawListPtr.AddRectFilled(new Vector2(windowSize.X - 10, windowSize.Y - 38), new Vector2(windowSize.X - 10 - windowSize.X / 8, windowSize.Y - 43), hudBackColor);
+            drawListPtr.AddRectFilled(new Vector2(windowSize.X - 10, windowSize.Y - 38), new Vector2(windowSize.X + (-10 - windowSize.X / 8) * percent, windowSize.Y - 43), hudColor);
+
+            weapon =meka.rightWeapon;
+
+            ammo = weapon.ammo;
+            maxAmmo = weapon.maxAmmo;
+            ammoString = ammo + "";
+            dif = 3 - ammoString.Length;
+            for (int i = 0; i < dif; i++)
+            {
+                ammoString = "0" + ammoString;
+            }
+            percent = weapon.isReloading ? weapon.ReloadPercent() : 1f * ammo / maxAmmo;
+
+            drawListPtr.AddText(ImGui.GetFont(), 25, new Vector2(windowSize.X - 10 - windowSize.X / 8, windowSize.Y - 38), hudColor, ammoString);
+            drawListPtr.AddText(ImGui.GetFont(), 22, new Vector2(windowSize.X - 72, windowSize.Y - 36), hudColor, "Right");
+
+            drawListPtr.AddRectFilled(new Vector2(windowSize.X - 10, windowSize.Y - 9), new Vector2(windowSize.X - 10 - windowSize.X / 8, windowSize.Y - 14), hudBackColor);
+            drawListPtr.AddRectFilled(new Vector2(windowSize.X - 10, windowSize.Y - 9), new Vector2(windowSize.X + (-10 - windowSize.X / 8) * percent, windowSize.Y - 14), hudColor);
+            //AMMO END
+
+            //CROSSHAIR START
+            Vector2 crosshair = windowSize * 0.5f;
+            Vector3 aim = mainCameraTransform.InverseTransformPosition(meka.currentAim);
+            float radius = windowSize.X/15 + -aim.Length()*3;
+            crosshair.X -= crosshair.X * aim.X / aim.Z;
+            crosshair.Y += crosshair.Y * 1.75f * aim.Y / aim.Z ;
+
+            drawListPtr.AddCircle(crosshair, radius, lockOnColor, 6, 5);
+
+            //drawListPtr.AddLine(new(crosshair.X,0),new(crosshair.X,windowSize.Y),lockOnColor);
+            //drawListPtr.AddLine(new(0,crosshair.Y),new(windowSize.X,crosshair.Y),lockOnColor);
+
+            Console.WriteLine("Aim=" + aim);
+            Console.WriteLine("Crosshair=" + crosshair.X);
+
+            //CROSSHAIR END
         }
     }
 }

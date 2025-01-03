@@ -353,10 +353,12 @@ namespace GameEngine
             }
         }
 
+        float timeSinceLastTarget = 1;
         private void AimControl(float deltaTime)
         {
             if (targetAim != null)
             {
+                timeSinceLastTarget = 0;
                 Vector3 position = targetAim.GetGameObject().transform.position;
                 if (currentAim != position)
                 {
@@ -394,13 +396,20 @@ namespace GameEngine
                     }
 
                 }
-                isAiming = true;
             }
             else
             {
-                currentAim = gameObject.transform.TransformPosition(new Vector3(0, 0, 6));
-                isAiming = false;
+                currentAim = gameObject.transform.TransformPosition(new Vector3(0, 1, 12));
+                timeSinceLastTarget += deltaTime;
             }
+
+            if(timeSinceLastTarget > 3) isAiming = false;
+            else isAiming = true;
+        }
+
+        public void ResetTargetTime()
+        {
+            timeSinceLastTarget = 0;
         }
 
         Vector3 input;

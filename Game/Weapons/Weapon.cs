@@ -102,7 +102,7 @@ namespace GameEngine
                 ammo--;
                 time = 0;
                 if(ammo <= 0) isReloading = true;
-            }
+            }else if (!isReloading && shoot && !meka.isAiming) meka.ResetTargetTime();
 
             if(isReloading && time > reloadTime){ isReloading = false; ammo = maxAmmo; }
             time += deltaTime;
@@ -129,6 +129,11 @@ namespace GameEngine
                     GameEngine.Render.DrawModel(transform.TransformPosition(canonOffset), transform.rotation, new Vector3(0.2f), m, s, t);
                 }
             }
+        }
+
+        public float ReloadPercent()
+        {
+            return time/reloadTime;
         }
 
         public void Shoot()

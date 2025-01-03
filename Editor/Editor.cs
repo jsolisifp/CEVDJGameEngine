@@ -66,6 +66,8 @@ namespace GameEngine
         static Vector2 cameraMousePreviousPosition;
         static bool editorView;
 
+        static MekaPlayerController playerController;
+
         static string[] atenuationTypes;
         public static void Init(IWindow _window, IInputContext _input, GL _gl)
         {
@@ -149,6 +151,16 @@ namespace GameEngine
             controller.Dispose();
         }
 
+        public static void SetPlayerController(MekaPlayerController controller)
+        {
+            playerController = controller;
+        }
+
+        public static void ClearPlayerController()
+        {
+            playerController = null;
+        }
+
         static void SwitchEnabled()
         {
             enabled = !enabled;
@@ -167,14 +179,18 @@ namespace GameEngine
 
         public static void OnRender(float deltaTime)
         {
-            if(!enabled) { return; }
-
+            if (!enabled) return;
+            
             DrawMenu();
             DrawViews();
             DrawModals();
 
+            if(playerController != null) playerController.DrawHud(window);
+
             controller.Render();
         }
+
+        
 
         private static void OnOverrideView(ref Matrix4x4 viewMatrix, ref Matrix4x4 projectionMatrix)
         {
