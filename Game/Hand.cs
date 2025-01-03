@@ -9,6 +9,8 @@ namespace GameEngine
 {
     internal class Hand : Component
     {
+
+        public Vector3 grabbedOffset = new Vector3(-0.05f, -0.1f, -0.1f);
         enum State
         {
             idle,
@@ -38,40 +40,50 @@ namespace GameEngine
             Vector2 mousePosition = Input.GetMousePosition();
             Vector2 deltaMousePoistion = mousePosition - previousMousePosition;
 
-            if(Input.IsMouseButtonPressed(1))
-            { gameObject.transform.position += 0.01f * new Vector3(deltaMousePoistion.X, -deltaMousePoistion.Y, 0); }
-            else
-            { gameObject.transform.position += 0.01f * new Vector3(deltaMousePoistion.X, 0, deltaMousePoistion.Y); }
+            if(!Input.IsMouseButtonPressed(1))
+            { gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, -deltaMousePoistion.Y, 0); }
+            //else
+            //{ gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, 0, -deltaMousePoistion.Y); }
             
             previousMousePosition = mousePosition;
 
             Vector3 position = gameObject.transform.position;
-            if(position.X < -2.0f) { position.X = -2.0f; }
-            else if (position.X > 2.0f) { position.X = 2.0f; };
-
-            if (position.Y < 0) { position.Y = -0.0f; }
-            else if (position.Y > 1.0f) { position.Y = 2.0f; };
-
-            if (position.Z < -2.0f) { position.Z = -2.0f; }
-            else if (position.Z > 2.0f) { position.Z = 2.0f; };
-
+            position.X = MathF.Max(MathF.Min(position.X, 0.6f), -0.6f);
+            position.Y = MathF.Max(MathF.Min(position.Y, 0.7f), 0.2f);
+            position.Z = MathF.Max(MathF.Min(position.Z, 0.5f), -0.5f);
             gameObject.transform.position = position;
 
-            if (state == State.idle)
+
+
+            if (state == State.grabbing)
             {
-                // Comportamiento normal cuando no tengo objeto
-            }
-            else // state == State.grabbing
-            {
-                Transform t = grabbed.GetGameObject().transform;
-                t.position = gameObject.transform.position;
-                t.rotation = gameObject.transform.rotation;
+                if (grabbed != null)
+                {
+                    grabbed.isKinematic = true;
+                    Transform t = grabbed.GetGameObject().transform;
+                    t.position = gameObject.transform.TransformPosition(grabbedOffset);
+                    t.rotation = gameObject.transform.rotation;
+                }
 
                 // Tengo que cambiar de estado?
-
-                if(!Input.IsMouseButtonPressed(0))
+                if (!Input.IsMouseButtonPressed(0))
                 {
+                    if (grabbed != null)
+                    {
+                        grabbed.isKinematic = false;
+                        grabbed.AddForce(new Vector3(0, 0, 500f), Physics.ForceMode.impulse);
+                        grabbed = null;
+                    }
                     nextState = State.idle;
+                }
+
+            }
+            else // state == State.idle
+            {
+                if (Input.IsMouseButtonPressed(0))
+                {
+
+                    nextState = State.grabbing;
                 }
             }
 
@@ -81,12 +93,19 @@ namespace GameEngine
             {
                 if (nextState == State.grabbing)
                 {
-                    grabbed.isKinematic = true;
+                    if (grabbed != null)
+                    {
+                        grabbed.isKinematic = true;
+                    }
                 }
                 else // nextState == State.idle
                 {
-                    grabbed.isKinematic = false;
-                    grabbed = null;
+                    if (grabbed != null)
+                    {
+                        grabbed.isKinematic = false;
+                        grabbed.AddForce(new Vector3(0, 0, 500f), Physics.ForceMode.impulse);
+                        grabbed = null;
+                    }
                 }
 
                 state = nextState;
@@ -96,14 +115,7 @@ namespace GameEngine
 
         public override void OnTriggerEnter(Rigidbody other)
         {
-
-            if (state == State.idle && Input.IsMouseButtonPressed(0) && other.GetGameObject().name == "BowlingBall")
-            {
-                grabbed = other;
-                nextState = State.grabbing;
-            }
-
+            grabbed = other;
         }
-
     }
 }

@@ -175,7 +175,7 @@ namespace GameEngine
                 go = new GameObject();
                 go.name = propsNames[i];
                 go.AddComponent(new Transform());
-                go.transform.position = new Vector3(0, 0, 0);
+                go.transform.position = new Vector3(0, 0, 5);
 
                 rendererC = new Renderer();
                 rendererC.modelId = props[i];
@@ -192,6 +192,7 @@ namespace GameEngine
             go.name = "HandRight";
             go.AddComponent(new Transform());
             go.transform.position = new Vector3(0, 0, 0);
+            go.transform.scale = new Vector3(1.5f, 1.5f, 1.5f);
 
             rendererC = new Renderer();
             rendererC.modelId = "HandRight.obj";
@@ -200,7 +201,7 @@ namespace GameEngine
             go.AddComponent(rendererC);
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(0.05f, 0.01f, 0.12f);
+            boxC.size = new Vector3(0.1f, 0.02f, 0.24f);
             go.AddComponent(boxC);
 
             go.AddComponent(new Trigger());
@@ -247,7 +248,7 @@ namespace GameEngine
             go.AddComponent(rigidC);
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(100,0.2f,100);
+            boxC.size = new Vector3(100,0.0f,100);
             go.AddComponent(boxC);
 
             scene.AddGameObject(go);
