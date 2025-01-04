@@ -11,24 +11,14 @@ namespace GameEngine
     {
 
         public Vector3 grabbedOffset = new Vector3(-0.05f, -0.1f, -0.1f);
-        enum State
-        {
-            idle,
-            grabbing
-        }
-
         Rigidbody grabbed;
-
-        State state;
-        State nextState;
-
         Vector2 previousMousePosition;
 
         public override void Start()
         {
             grabbed = null;
-            state = State.idle;
-            nextState = State.idle;
+            GameManager.state = GameManager.State.idle;
+            GameManager.nextState = GameManager.State.idle;
 
             previousMousePosition = Input.GetMousePosition();
         }
@@ -42,8 +32,8 @@ namespace GameEngine
 
             if(!Input.IsMouseButtonPressed(1))
             { gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, -deltaMousePoistion.Y, 0); }
-            //else
-            //{ gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, 0, -deltaMousePoistion.Y); }
+            else
+            { gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, 0, deltaMousePoistion.Y); }
             
             previousMousePosition = mousePosition;
 
@@ -55,7 +45,7 @@ namespace GameEngine
 
 
 
-            if (state == State.grabbing)
+            if (GameManager.state == GameManager.State.grabbing)
             {
                 if (grabbed != null)
                 {
@@ -71,10 +61,14 @@ namespace GameEngine
                     if (grabbed != null)
                     {
                         grabbed.isKinematic = false;
-                        grabbed.AddForce(new Vector3(0, 0, 500f), Physics.ForceMode.impulse);
-                        grabbed = null;
+                        if (Input.IsMouseButtonPressed(1))
+                        {
+                            grabbed.AddForce(new Vector3(0, 0, 500f), Physics.ForceMode.impulse);
+                        }
                     }
-                    nextState = State.idle;
+
+                    grabbed = null;
+                    GameManager.nextState = GameManager.State.idle;
                 }
 
             }
@@ -83,15 +77,15 @@ namespace GameEngine
                 if (Input.IsMouseButtonPressed(0))
                 {
 
-                    nextState = State.grabbing;
+                    GameManager.nextState = GameManager.State.grabbing;
                 }
             }
 
             // Cambios de estado
 
-            if (state != nextState)
+            if (GameManager.state != GameManager.nextState)
             {
-                if (nextState == State.grabbing)
+                if (GameManager.nextState == GameManager.State.grabbing)
                 {
                     if (grabbed != null)
                     {
@@ -103,12 +97,12 @@ namespace GameEngine
                     if (grabbed != null)
                     {
                         grabbed.isKinematic = false;
-                        grabbed.AddForce(new Vector3(0, 0, 500f), Physics.ForceMode.impulse);
+                        grabbed.AddForce(new Vector3(0, 0, 5), Physics.ForceMode.force);
                         grabbed = null;
                     }
                 }
 
-                state = nextState;
+                GameManager.state = GameManager.nextState;
             }
 
         }

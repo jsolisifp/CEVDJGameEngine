@@ -9,7 +9,13 @@ namespace GameEngine
 {
     internal class GameManager : Component
     {
+        public enum State
+        {
+            idle,
+            grabbing
+        }
 
-        
+        public static State state;
+        public static State nextState;
     }
 }

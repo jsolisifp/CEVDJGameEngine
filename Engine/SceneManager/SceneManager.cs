@@ -114,6 +114,7 @@ namespace GameEngine
             SphereCollider sphereC;
             Rigidbody rigidC;
             Trigger triggerC;
+            CameraMainScript cameraMSC;
 
             // Directional Light
 
@@ -134,11 +135,14 @@ namespace GameEngine
             go = new GameObject();
             go.name = "MainCamera";
             go.AddComponent(new Transform());
-            go.transform.position = new Vector3(0, 0.6f, 2);
+            go.transform.position = new Vector3(0, 1, 2);
             go.transform.rotation = new Vector3(-20, 0, 0);
 
             cameraC = new Camera();
             go.AddComponent(cameraC);
+
+            cameraMSC = new CameraMainScript();
+            go.AddComponent(cameraMSC);
 
             scene.AddGameObject(go);
 
@@ -225,7 +229,7 @@ namespace GameEngine
 
             rigidC = new Rigidbody();
             rigidC.isKinematic = false;
-            rigidC.mass = 4;
+            rigidC.mass = 1;
             go.AddComponent(rigidC);
 
             sphereC = new SphereCollider();
