@@ -34,5 +34,15 @@ namespace GameEngine
         {
             meka.Damage(damage);
         }
+
+        public int GetHP()
+        {
+            return meka.hp < 0 ? 0 : meka.hp;
+        }
+
+        public int GetMaxHP()
+        {
+            return meka.maxHp;
+        }
     }
 }

@@ -73,6 +73,7 @@ namespace GameEngine
         {
 
             Vector3 position = mekaTransform.InverseTransformPosition(mainCameraTransform.position);
+            float zMargin = position.Z - cameraOffset.Z;
 
             if (position.X != cameraOffset.X)
             {
@@ -80,13 +81,13 @@ namespace GameEngine
                 {
                     position.X += centeringSpeed * deltaTime;
                     if (position.X > cameraOffset.X) position.X = cameraOffset.X;
-                    else if (position.X < xCameraBoundaries.Y) position.X = xCameraBoundaries.Y;
+                    else if (position.X < xCameraBoundaries.Y + zMargin) position.X = xCameraBoundaries.Y + zMargin;
                 }
                 else
                 {
                     position.X -= centeringSpeed * deltaTime;
                     if (position.X < cameraOffset.X) position.X = cameraOffset.X;
-                    else if (position.X > xCameraBoundaries.X) position.X = xCameraBoundaries.X;
+                    else if (position.X > xCameraBoundaries.X - zMargin) position.X = xCameraBoundaries.X - zMargin;
                 }
             }
 
@@ -96,13 +97,13 @@ namespace GameEngine
                 {
                     position.Y += centeringSpeed * deltaTime;
                     if (position.Y > cameraOffset.Y) position.Y = cameraOffset.Y;
-                    else if (position.Y < yCameraBoundaries.Y) position.Y = yCameraBoundaries.Y;
+                    else if (position.Y < yCameraBoundaries.Y + zMargin) position.Y = yCameraBoundaries.Y + zMargin;
                 }
                 else
                 {
                     position.Y -= centeringSpeed * deltaTime;
                     if (position.Y < cameraOffset.Y) position.Y = cameraOffset.Y;
-                    else if (position.Y > yCameraBoundaries.X) position.Y = yCameraBoundaries.X;
+                    else if (position.Y > yCameraBoundaries.X - zMargin) position.Y = yCameraBoundaries.X - zMargin;
                 }
             }
 
@@ -202,16 +203,20 @@ namespace GameEngine
             targetingZone.rotation = mekaTransform.rotation;
             targetingZone.position = mainCameraTransform.TransformPosition(targetingOffset);
 
-            if (targets.Count == 0) { currentTarget = null; return; }
-
-            if (meka.isTargetLock && currentTarget != null && currentTarget.teamId != -1) return;
+            if (targets.Count == 0 || currentTarget != null && currentTarget.teamId == -1) { currentTarget = null; return; }
+            else if (meka.isTargetLock && currentTarget != null && currentTarget.teamId != -1) return;
             meka.isTargetLock = false;
             Target tmpTarget = null;
             Vector3 tmpVector;
             float distance = -1;
             for (int i = 0; i < targets.Count; i++)
             {
-                tmpVector = mekaTransform.InverseTransformPosition(targets[i].GetGameObject().transform.position);
+                if (targets[i].teamId == -1)
+                {
+                    targets.RemoveAt(i);
+                    if (i >= targets.Count) continue;
+                }
+                tmpVector = mainCameraTransform.InverseTransformPosition(targets[i].GetGameObject().transform.position);
                 if(i == 0 || tmpVector.Length()<distance)
                 { 
                     tmpTarget = targets[i];
@@ -231,23 +236,29 @@ namespace GameEngine
             targets.Remove(target);
         }
 
-        public void DrawHud(IWindow window)
+        int lastHp = 0;
+        float accumulatedDamage = 0;
+        float lastDamage = 0;
+        int lastTargetHp = 0;
+        float accumulatedTargetDamage = 0;
+        float lastTargetDamage = 0;
+        Target lastTarget = null;
+        public void DrawHud(IWindow window, float deltaTime)
         {
             ImDrawListPtr drawListPtr = ImGui.GetBackgroundDrawList();
-            
+
             Vector2 windowSize = new Vector2(window.Size.X, window.Size.Y);
             //Console.WriteLine("WindowSize1 "+windowSize);
             uint hudColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1, 1, 1, 1));
             uint transparentColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8f, 0.8f, 0.8f, 0.25f));
             uint hudBackColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.5f, 0.5f, 0.5f, 1));
             uint lockOnColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8f, 0.8f, 0.8f, 0.75f));
+            uint damageColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 0f, 0f, 1f));
 
             //HP START
             drawListPtr.AddRectFilled(new Vector2(0, windowSize.Y), new Vector2(20 + windowSize.X / 8, windowSize.Y - 70), transparentColor, 0.25f);
 
-            int hp = meka.hp;
-            int maxHp = meka.maxHp;
-            string hpString = hp + "";
+            string hpString = meka.hp + "";
             int dif = 4 - hpString.Length;
             for (int i = 0; i < dif; i++)
             {
@@ -257,13 +268,32 @@ namespace GameEngine
             drawListPtr.AddText(ImGui.GetFont(), 40f, new Vector2(windowSize.X / 8 - 75, windowSize.Y - 70), hudColor, hpString);
 
             drawListPtr.AddRectFilled(new Vector2(10, windowSize.Y - 10), new Vector2(10 + windowSize.X / 8, windowSize.Y - 30), hudBackColor);
-            drawListPtr.AddRectFilled(new Vector2(10, windowSize.Y - 10), new Vector2((10 + windowSize.X / 8) * hp / maxHp, windowSize.Y - 30), hudColor);
+            drawListPtr.AddRectFilled(new Vector2(10, windowSize.Y - 10), new Vector2((10 + windowSize.X / 8) * (meka.hp + accumulatedDamage) / meka.maxHp, windowSize.Y - 30), damageColor);
+            drawListPtr.AddRectFilled(new Vector2(10, windowSize.Y - 10), new Vector2((10 + windowSize.X / 8) * meka.hp / meka.maxHp, windowSize.Y - 30), hudColor);
+            if (lastHp == 0) lastHp = meka.hp;
+
+            if (lastHp > meka.hp)
+            {
+                accumulatedDamage += lastHp - meka.hp;
+                lastHp = meka.hp;
+                lastDamage = 0;
+            }
+            else if (accumulatedDamage > 0 && lastDamage > 0.5)
+            {
+                accumulatedDamage -= deltaTime * meka.maxHp / 2;
+                if (accumulatedDamage < 0) accumulatedDamage = 0;
+            }
+            else
+            {
+                lastDamage += deltaTime;
+            }
+
             //HP END
 
             //AMMO START
             drawListPtr.AddRectFilled(new Vector2(windowSize.X, windowSize.Y), new Vector2(windowSize.X - 20 - windowSize.X / 8, windowSize.Y - 70), transparentColor, 0.25f);
             Weapon weapon = meka.leftWeapon;
-            
+
             int ammo = weapon.ammo;
             int maxAmmo = weapon.maxAmmo;
             string ammoString = ammo + "";
@@ -272,7 +302,7 @@ namespace GameEngine
             {
                 ammoString = "0" + ammoString;
             }
-            float percent = weapon.isReloading ? weapon.ReloadPercent() : 1f*ammo/maxAmmo;
+            float percent = weapon.isReloading ? weapon.ReloadPercent() : 1f * ammo / maxAmmo;
 
             drawListPtr.AddText(ImGui.GetFont(), 25, new Vector2(windowSize.X - 10 - windowSize.X / 8, windowSize.Y - 67), hudColor, ammoString);
             drawListPtr.AddText(ImGui.GetFont(), 22, new Vector2(windowSize.X - 72, windowSize.Y - 65), hudColor, "Left");
@@ -280,7 +310,7 @@ namespace GameEngine
             drawListPtr.AddRectFilled(new Vector2(windowSize.X - 10, windowSize.Y - 38), new Vector2(windowSize.X - 10 - windowSize.X / 8, windowSize.Y - 43), hudBackColor);
             drawListPtr.AddRectFilled(new Vector2(windowSize.X - 10, windowSize.Y - 38), new Vector2(windowSize.X + (-10 - windowSize.X / 8) * percent, windowSize.Y - 43), hudColor);
 
-            weapon =meka.rightWeapon;
+            weapon = meka.rightWeapon;
 
             ammo = weapon.ammo;
             maxAmmo = weapon.maxAmmo;
@@ -302,19 +332,55 @@ namespace GameEngine
             //CROSSHAIR START
             Vector2 crosshair = windowSize * 0.5f;
             Vector3 aim = mainCameraTransform.InverseTransformPosition(meka.currentAim);
-            float radius = windowSize.X/15 + -aim.Length()*3;
+            float radius = windowSize.X / 15 + -aim.Length() * 3;
             crosshair.X -= crosshair.X * aim.X / aim.Z;
-            crosshair.Y += crosshair.Y * 1.75f * aim.Y / aim.Z ;
+            crosshair.Y += crosshair.Y * 1.75f * aim.Y / aim.Z;
 
             drawListPtr.AddCircle(crosshair, radius, lockOnColor, 6, 5);
-
             //drawListPtr.AddLine(new(crosshair.X,0),new(crosshair.X,windowSize.Y),lockOnColor);
             //drawListPtr.AddLine(new(0,crosshair.Y),new(windowSize.X,crosshair.Y),lockOnColor);
-
-            Console.WriteLine("Aim=" + aim);
-            Console.WriteLine("Crosshair=" + crosshair.X);
-
             //CROSSHAIR END
+
+            //ENEMY HP START
+            if (currentTarget != null) 
+            {
+                if (lastTarget == null || lastTarget != currentTarget)
+                {
+                    lastTarget = currentTarget;
+                    accumulatedTargetDamage = 0;
+                    lastTargetHp = currentTarget.GetHP();
+                    lastTargetDamage = 0;
+                }
+                else
+                {
+                    lastTarget = currentTarget;
+                }
+
+                Vector2 targetHPpos = new Vector2(crosshair.X - radius, crosshair.Y - radius - 10);
+                drawListPtr.AddRectFilled(targetHPpos, new Vector2(targetHPpos.X + radius * 2, targetHPpos.Y + radius/10), hudBackColor);
+
+                drawListPtr.AddRectFilled(targetHPpos,new Vector2(targetHPpos.X + (radius * 2) * (currentTarget.GetHP() + accumulatedTargetDamage) / currentTarget.GetMaxHP(), targetHPpos.Y + radius / 10), damageColor);
+
+                drawListPtr.AddRectFilled(targetHPpos, new Vector2(targetHPpos.X + (radius * 2) * currentTarget.GetHP()/currentTarget.GetMaxHP(), targetHPpos.Y + radius/10), hudColor);
+                
+                
+                if (lastTargetHp > currentTarget.GetHP())
+                {
+                    accumulatedTargetDamage += lastTargetHp - currentTarget.GetHP();
+                    lastTargetHp = currentTarget.GetHP();
+                    lastTargetDamage = 0;
+                }
+                else if (accumulatedTargetDamage > 0 && lastTargetDamage > 0.5)
+                {
+                    accumulatedTargetDamage -= deltaTime * currentTarget.GetMaxHP()/2;
+                    if (accumulatedTargetDamage < 0)  accumulatedTargetDamage = 0;
+                }
+                else
+                {
+                    lastTargetDamage += deltaTime;
+                }
+            }
+
         }
     }
 }

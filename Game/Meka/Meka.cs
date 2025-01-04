@@ -145,17 +145,21 @@ namespace GameEngine
 
         }
 
+        Target target;
         public override void Start()
         {
-            int teamId = hitBox.GetGameObject().GetComponent<Target>().teamId;
-            if(leftWeapon != null) leftWeapon.SetTeamId(teamId);
-            if(rightWeapon != null) rightWeapon.SetTeamId(teamId);
-            if(leftShoulderWeapon != null) leftShoulderWeapon.SetTeamId(teamId);
-            if (rightShoulderWeapon != null) rightShoulderWeapon.SetTeamId(teamId);
+            target = hitBox.GetGameObject().GetComponent<Target>();
+            if (leftWeapon != null) leftWeapon.SetTeamId(target.teamId);
+            if(rightWeapon != null) rightWeapon.SetTeamId(target.teamId);
+            if(leftShoulderWeapon != null) leftShoulderWeapon.SetTeamId(target.teamId);
+            if (rightShoulderWeapon != null) rightShoulderWeapon.SetTeamId(target.teamId);
         }
 
         Vector3 lookAtPosition;
+        Vector3 up;
         float lastDeltaTime;
+        float timeDead=0;
+        float lastExplosion=0;
         public override void Update(float deltaTime)
         {
 
@@ -173,7 +177,6 @@ namespace GameEngine
             }
 
             AimControl(deltaTime);
-            
 
             transforms[1].position = transforms[0].TransformPosition(armsOffset); //BrazoIzquierdo
             rightArmOffset = armsOffset * 1;
@@ -187,86 +190,110 @@ namespace GameEngine
 
             float maxSpeed, marginX, marginY;
 
-            if (!isFlying)
+            if (hp > 0) //Parte de cosas si esta vivo
             {
-                maxSpeed = maxGroundSpeed;
-                marginX = 0.25f;
-                marginY = 1.5f;
-            }
-            else
-            {
-                maxSpeed = maxFlightSpeed;
-                marginX = 1;
-                marginY = 2.5f;
-            }
+                if (!isFlying)
+                {
+                    maxSpeed = maxGroundSpeed;
+                    marginX = 0.25f;
+                    marginY = 1.5f;
+                }
+                else
+                {
+                    maxSpeed = maxFlightSpeed;
+                    marginX = 1;
+                    marginY = 2.5f;
+                }
 
-            lookAtPosition = new Vector3(0, 0, 5);
+                lookAtPosition = new Vector3(0, 0, 5);
 
-            if (isAiming) 
-            {
-                Vector3 tmpAim = currentAim;
-                tmpAim.Y = transforms[0].position.Y;
-                transforms[0].LookAt(transforms[0].position - (tmpAim - transforms[0].position), Meka.vectorUp);
-            }
-            else
-            {
-                transforms[0].rotation = gameObject.transform.rotation;
-                transforms[0].LookAt(transforms[0].position - (transforms[0].TransformPosition(lookAtPosition) - transforms[0].position), Meka.vectorUp);
-            }
-
-            lookAtPosition = new Vector3(0, -speed.Z / maxSpeed * marginY, 5);
-            lookAtPosition = transforms[0].TransformPosition(lookAtPosition);
-            Vector3 up = transforms[0].TransformDirection(new(speed.X / maxSpeed * marginX, 1, 0));
-            transforms[0].LookAt(transforms[0].position - (lookAtPosition - transforms[0].position), up);
-
-            if (isAiming && isTargetLock)
-            {
-                Vector3 tmpAim = currentAim;
-                tmpAim.Y = gameObject.transform.position.Y;
-                gameObject.transform.LookAt(gameObject.transform.position - (tmpAim - gameObject.transform.position), Meka.vectorUp);
-            }
-            else
-            {
-                gameObject.transform.rotation.X = 0;
-                gameObject.transform.rotation.Z = 0;
-            }
-            
-
-            for (int i = 1; i < 7; i++)
-            {
-                transforms[i].rotation = transforms[0].rotation;
-            }
-
-            if (!isFlying)
-            {
-                transforms[3].rotation = gameObject.transform.rotation;
-                if (isAiming) 
+                if (isAiming)
                 {
                     Vector3 tmpAim = currentAim;
-                    tmpAim.Y = transforms[3].position.Y;
-                    transforms[3].LookAt(transforms[3].position - (tmpAim - transforms[3].position), Meka.vectorUp);
+                    tmpAim.Y = transforms[0].position.Y;
+                    transforms[0].LookAt(transforms[0].position - (tmpAim - transforms[0].position), Meka.vectorUp);
                 }
-                
-            }
+                else
+                {
+                    transforms[0].rotation = gameObject.transform.rotation;
+                    transforms[0].LookAt(transforms[0].position - (transforms[0].TransformPosition(lookAtPosition) - transforms[0].position), Meka.vectorUp);
+                }
 
-            if (isAiming && leftWeapon != null && !leftWeapon.isReloading)
-            {
-                transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position), up);
+                lookAtPosition = new Vector3(0, -speed.Z / maxSpeed * marginY, 5);
+                lookAtPosition = transforms[0].TransformPosition(lookAtPosition);
+                up = transforms[0].TransformDirection(new(speed.X / maxSpeed * marginX, 1, 0));
+                transforms[0].LookAt(transforms[0].position - (lookAtPosition - transforms[0].position), up);
+
+                if (isAiming && isTargetLock)
+                {
+                    Vector3 tmpAim = currentAim;
+                    tmpAim.Y = gameObject.transform.position.Y;
+                    gameObject.transform.LookAt(gameObject.transform.position - (tmpAim - gameObject.transform.position), Meka.vectorUp);
+                }
+                else
+                {
+                    gameObject.transform.rotation.X = 0;
+                    gameObject.transform.rotation.Z = 0;
+                }
+
+
+                for (int i = 1; i < 7; i++)
+                {
+                    transforms[i].rotation = transforms[0].rotation;
+                }
+
+                if (!isFlying)
+                {
+                    transforms[3].rotation = gameObject.transform.rotation;
+                    if (isAiming)
+                    {
+                        Vector3 tmpAim = currentAim;
+                        tmpAim.Y = transforms[3].position.Y;
+                        transforms[3].LookAt(transforms[3].position - (tmpAim - transforms[3].position), Meka.vectorUp);
+                    }
+
+                }
+
+                if (isAiming && leftWeapon != null && !leftWeapon.isReloading)
+                {
+                    transforms[1].LookAt(transforms[1].position - (currentAim - transforms[1].position), up);
+                }
+                else
+                {
+                    transforms[1].LookAt(transforms[1].position - (transforms[0].TransformPosition(armsRestingRotation) - transforms[1].position), up);
+                }
+
+                if (isAiming && rightWeapon != null && !rightWeapon.isReloading)
+                {
+                    transforms[2].LookAt(transforms[2].position - (currentAim - transforms[2].position), up);
+                }
+                else
+                {
+                    rightArmRestingRotation = armsRestingRotation;
+                    rightArmRestingRotation.X = -armsRestingRotation.X;
+                    transforms[2].LookAt(transforms[2].position - (transforms[0].TransformPosition(rightArmRestingRotation) - transforms[2].position), up);
+                }
             }
             else
             {
-                transforms[1].LookAt(transforms[1].position - (transforms[0].TransformPosition(armsRestingRotation) - transforms[1].position), up);
-            }
+                target.teamId = -1;
+                input = Vector3.Zero;
+                rotation = 0;
+                targetAim = null;
 
-            if (isAiming && rightWeapon != null && !rightWeapon.isReloading)
-            {
-                transforms[2].LookAt(transforms[2].position - (currentAim - transforms[2].position), up);
-            }
-            else
-            {
-                rightArmRestingRotation = armsRestingRotation;
-                rightArmRestingRotation.X = -armsRestingRotation.X;
-                transforms[2].LookAt(transforms[2].position - (transforms[0].TransformPosition(rightArmRestingRotation) - transforms[2].position), up);
+                if (lastExplosion > 0.1)
+                {
+                    Random random = new Random();
+                    Vector3 explosion = new(RandUtils.Range(random, -1f, 1f), RandUtils.Range(random, -1f, 1f), RandUtils.Range(random, -1f, 1f));
+                    Explosion.CreateExplosion(transforms[0].TransformPosition(explosion), -1, 0, 0.5f, new Vector3(1), "Default.shader", "Red.png");
+                    lastExplosion = 0;
+                }
+                else
+                {
+                    lastExplosion += deltaTime;
+                }
+
+                timeDead += deltaTime;
             }
 
             if (leftWeapon != null)
@@ -326,10 +353,20 @@ namespace GameEngine
                 hitBox.rotation = transforms[0].rotation;
             }
 
+
             SpeedControl(deltaTime);
             CheckFloor();
 
             lastDeltaTime = deltaTime;
+
+            if(timeDead > 1.6)
+            {
+                hitBox.GetGameObject().Stop();
+                gameObject.Stop();
+                Scene scene = SceneManager.GetActiveScene();
+                scene.RemoveGameObject(hitBox.GetGameObject());
+                scene.RemoveGameObject(gameObject);
+            }
         }
 
         public override void Render(float deltaTime)

@@ -185,7 +185,7 @@ namespace GameEngine
             DrawViews();
             DrawModals();
 
-            if(playerController != null) playerController.DrawHud(window);
+            if(playerController != null) playerController.DrawHud(window, deltaTime);
 
             controller.Render();
         }

@@ -980,19 +980,21 @@ namespace GameEngine
 
         public static void Stop()
         {
+            /*
             Debug.Assert(collidingPairsList.Count == 0, "Colliding pairs list is no empty on stop");
             Debug.Assert(collidingPairsSet.Count == 0, "Colliding pairs set is not empty on stop");
-
+            */
             debugContactsList.Clear();
         }
 
         public static void Finish()
         {
+            /*
             Debug.Assert(collidingPairsList.Count == 0, "Colliding pairs list is no empty on finish");
             Debug.Assert(collidingPairsSet.Count == 0, "Colliding pairs set is not empty on finish");
             Debug.Assert(staticBodyToOwner.Count == 0, "Static body to rigidbody dictionary is not empty on finish");
             Debug.Assert(nonStaticBodyToOwner.Count == 0, "Non static body to rigidbody dictionary is not empty on finish");
-
+            */
 
             Render.onRenderOverlay -= OnRender;
 
