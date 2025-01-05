@@ -1,4 +1,5 @@
-﻿using Silk.NET.Assimp;
+﻿using BepuPhysics.Collidables;
+using Silk.NET.Assimp;
 using Silk.NET.Windowing;
 using System.Numerics;
 
@@ -164,7 +165,34 @@ namespace GameEngine
                 scene.AddGameObject(go);
 
             }
-           
+
+            //Pin
+            go = new GameObject();
+            go.name = "BowlingPin";
+            go.AddComponent(new Transform());
+
+            go.transform.position = new Vector3(0, 0, -10);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "BowlingPin.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Red.png";
+
+            go.AddComponent(rendererC);
+
+            rigidC = new Rigidbody();
+            rigidC.isKinematic = false;
+            rigidC.mass = 2;
+
+            go.AddComponent(rigidC);
+
+            boxC = new BoxCollider();
+            boxC.size = new Vector3(0.2f, 0.1f, 0.2f);
+
+            go.AddComponent(boxC);
+            scene.AddGameObject(go);
+
+            //Ball
             go = new GameObject();
             go.name = "Ball";
             go.AddComponent(new Transform());
@@ -222,6 +250,8 @@ namespace GameEngine
 
             scene.AddGameObject(go);
 
+
+            //Hand
             go = new GameObject();
             go.name = "HandRight";
             go.AddComponent(new Transform());
@@ -234,7 +264,7 @@ namespace GameEngine
             go.AddComponent(rendererC);
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(0.5f, 0.1f, 0.12f);
+            boxC.size = new Vector3(0.5f, 0.5f, 0.12f);
 
             go .AddComponent(boxC);
 
@@ -243,6 +273,7 @@ namespace GameEngine
             go.AddComponent(new Hand());
 
             scene.AddGameObject(go);
+
 
             go = new GameObject();
             go.name = "Floor";
