@@ -35,7 +35,7 @@ namespace GameEngine
 
         unsafe void UpdateOrientation()
         {
-            Vector3 direction = gameObject.transform.TransformDirection(Vector3.UnitZ);
+            Vector3 direction = gameObject.transform.TransformDirection(-Vector3.UnitZ);
             orientation[0] = direction.X;
             orientation[1] = direction.Y;
             orientation[2] = direction.Z;

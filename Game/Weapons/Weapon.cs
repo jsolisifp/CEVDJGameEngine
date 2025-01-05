@@ -33,10 +33,12 @@ namespace GameEngine
         public bool isReloading;
         public float reloadTime = 2;
 
-        
-       
+        public string shootSoundId = "";
+        public string reloadSoundId = "";
+
         float time;
         Preset projectile;
+        AudioSource shootAudioSource;
 
         Transform transform;
         int teamId;
@@ -71,10 +73,27 @@ namespace GameEngine
             r = new Random();
             projectile = Assets.GetLoadedAsset<Preset>(projectilePreset);
             if (projectile != null) projectile.PrepareCopy();
+
         }
 
         public override void Update(float deltaTime)
         {
+            if(shootAudioSource == null && Engine.GetState() == Engine.State.playing)
+            {
+                GameObject go = new GameObject();
+                go.name = meka.GetGameObject().name + "'s " + name + " AudioSource";
+                go.AddComponent(new Transform());
+
+                shootAudioSource = new AudioSource();
+                shootAudioSource.clipId = shootSoundId;
+                go.AddComponent(shootAudioSource);
+
+                SceneManager.GetActiveScene().AddGameObject(go);
+                go.Start();
+            }
+
+            if(shootAudioSource!=null) shootAudioSource.GetGameObject().transform.position = transform.position;
+
             if (shoot && time > fireRate && !isReloading && meka.isAiming)
             {
                 for (int i = 0; i < projectilesPerShoot; i++)
@@ -99,14 +118,48 @@ namespace GameEngine
                     go.Start();
                 }
 
+                if (shootAudioSource != null)
+                {
+                    shootAudioSource.pitch = RandUtils.Range(r, 0.9f, 1.1f);
+                    shootAudioSource.StopAudio();
+                    shootAudioSource.PlayAudio();
+                }
+
                 ammo--;
                 time = 0;
-                if(ammo <= 0) isReloading = true;
-            }else if (!isReloading && shoot && !meka.isAiming) meka.ResetTargetTime();
+                if (ammo <= 0) 
+                { 
+                    isReloading = true;
+                    if (reloadSoundId.Length > 0)
+                    {
+                        shootAudioSource.StopAudio();
+                        shootAudioSource.loop = true;
+                        shootAudioSource.clipId = reloadSoundId;
+                        shootAudioSource.autoPlay = true;
+                    }
+                }
+            }
+            else if (!isReloading && shoot && !meka.isAiming) meka.ResetTargetTime();
 
-            if(isReloading && time > reloadTime){ isReloading = false; ammo = maxAmmo; }
+
+            if (isReloading && time > reloadTime){ 
+                isReloading = false;
+                ammo = maxAmmo;
+
+                shootAudioSource.StopAudio();
+                shootAudioSource.loop = false;
+                shootAudioSource.clipId = shootSoundId;
+            }
             time += deltaTime;
             shoot = false;
+        }
+
+        public override void Stop()
+        {
+            if(shootAudioSource == null) return;
+            GameObject go = shootAudioSource.GetGameObject();
+            go.Stop();
+            SceneManager.GetActiveScene().RemoveGameObject(go);
         }
 
         public override void Render(float deltaTime)

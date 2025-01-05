@@ -29,7 +29,7 @@ namespace GameEngine
         {
             al = Audio.GetAL();
             clipId = "";
-            volume = 1.0f;
+            volume = 0.25f;
             pitch = 1.0f;
             loop = false;
             maxDistance = float.PositiveInfinity;
@@ -44,8 +44,16 @@ namespace GameEngine
         {
             if (sourceStarted)
             {
-                if (autoPlay && Engine.GetState() == Engine.State.playing) { PlayAudio(); autoPlay = false; }
+                AudioClip audioClip = Assets.GetLoadedAsset<AudioClip>(clipId);
+                if (audioClip != null) al.SetSourceProperty(source, SourceInteger.Buffer, audioClip.GetBuffer());
                 al.SetSourceProperty(source, SourceVector3.Position, gameObject.transform.position);
+                al.SetSourceProperty(source, SourceFloat.MaxGain, volume);
+                al.SetSourceProperty(source, SourceFloat.Pitch, pitch);
+                al.SetSourceProperty(source, SourceBoolean.Looping, loop);
+                al.SetSourceProperty(source, SourceFloat.MaxDistance, maxDistance);
+                al.SetSourceProperty(source, SourceFloat.RolloffFactor, rolloffFactor);
+
+                if (autoPlay && Engine.GetState() == Engine.State.playing) { PlayAudio(); autoPlay = false; }
             }
         }
 
@@ -53,21 +61,13 @@ namespace GameEngine
         public override void Start()
         {
             
-            AudioClip audioClip = Assets.GetLoadedAsset<AudioClip>(clipId);
             Console.WriteLine("Cargado");
 
-            if (audioClip == null) { return; }
-            
 
             sourceStarted = true;
             source = Audio.GetAL().GenSource();
 
-            al.SetSourceProperty(source, SourceInteger.Buffer, audioClip.GetBuffer());
-            al.SetSourceProperty(source, SourceFloat.MaxGain, volume);
-            al.SetSourceProperty(source, SourceFloat.Pitch, pitch);
-            al.SetSourceProperty(source, SourceBoolean.Looping, loop);
-            al.SetSourceProperty(source, SourceFloat.MaxDistance, maxDistance);
-            al.SetSourceProperty(source, SourceFloat.RolloffFactor, rolloffFactor);
+            
 
         }
         public override void Stop()
@@ -89,7 +89,6 @@ namespace GameEngine
         {
             clipState = ClipState.stoped;
             al.SourceStop(source);
-            Stop();
         }
         public void PauseAudio()
         {

@@ -285,7 +285,7 @@ namespace GameEngine
                 {
                     Random random = new Random();
                     Vector3 explosion = new(RandUtils.Range(random, -1f, 1f), RandUtils.Range(random, -1f, 1f), RandUtils.Range(random, -1f, 1f));
-                    Explosion.CreateExplosion(transforms[0].TransformPosition(explosion), -1, 0, 0.5f, new Vector3(1), "Default.shader", "Red.png");
+                    Explosion.CreateExplosion(transforms[0].TransformPosition(explosion), -1, 0, 0.5f, new Vector3(1), "NoLight.shader", "Red.png","explosion.wav",1f);
                     lastExplosion = 0;
                 }
                 else

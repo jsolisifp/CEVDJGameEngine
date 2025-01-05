@@ -24,6 +24,8 @@ namespace GameEngine
         public int explosionDamage;
         public Vector3 explosionFinalScale;
         public float explosionDuration;
+        public string explosionClipId;
+        public float explosionOpacity;
 
         Vector3 direction;
         bool hit;
@@ -35,6 +37,8 @@ namespace GameEngine
 
             explosionShader = "";
             explosionTexture = "";
+            explosionClipId = "";
+            explosionOpacity = 1;
         }
 
 
@@ -71,11 +75,11 @@ namespace GameEngine
 
             SceneManager.GetActiveScene().RemoveGameObject(gameObject);
 
-            if (createsExplosion)
+            if (hit && createsExplosion)
             {
                 Explosion.CreateExplosion(
                     gameObject.transform.TransformPosition(explosionOriginOffset), teamId, explosionDamage,
-                    explosionDuration, explosionFinalScale, explosionShader, explosionTexture);
+                    explosionDuration, explosionFinalScale, explosionShader, explosionTexture, explosionClipId, explosionOpacity);
             }
         }
     }

@@ -15,7 +15,7 @@ namespace GameEngine
     internal class Editor
     {
         const int selectedGameObjectsListInitialCapacity = 100;
-        const int maxNameLength = 20;
+        const int maxNameLength = 50;
         const ImGuiWindowFlags defaultWindowFlags = ImGuiWindowFlags.AlwaysAutoResize;
 
         static ImGuiController controller;
@@ -30,6 +30,7 @@ namespace GameEngine
         static HashSet<GameObject> selectedGameObjectsSet;
         static List<GameObject> selectedGameObjectsList;
         static string selectedAssetId;
+        static string assetFilter;
 
         static Component presetSaveComponent;
 
@@ -535,7 +536,7 @@ namespace GameEngine
 
                             if(t.Name != "Transform")
                             {
-                                if(ImGui.MenuItem(t.Name))
+                                if(ImGui.MenuItem(i +"-"+t.Name))
                                 {
                                     c.Stop();
                                     selectedGameObjectsList[0].RemoveComponent(c);
@@ -641,6 +642,26 @@ namespace GameEngine
 
                         selectedAssetId = "";
                     }
+                }
+
+
+                if (ImGui.BeginMenu("Filter Assets List"))
+                {
+                    List<string> extensions = Assets.GetLoadedExtensions();
+                    if (ImGui.MenuItem("Clear"))
+                    {
+                        assetFilter = null;
+                    }
+
+                    for (int i = 0; i < extensions.Count; i++)
+                    {
+                        if (ImGui.MenuItem(extensions[i]))
+                        {
+                            assetFilter = extensions[i];
+                        }
+                    }
+
+                    ImGui.EndMenu();
                 }
 
                 ImGui.EndMenu();
@@ -1030,6 +1051,8 @@ namespace GameEngine
             for(int i = 0; i < paths.Count; i++)
             {
                 string path = paths[i];
+
+                if(assetFilter != null && Assets.GetExtension(path) != assetFilter) continue;
 
                 bool isSceneAsset = (Assets.GetLoadedAssetType(path, false) == typeof(Scene));
     

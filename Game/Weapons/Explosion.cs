@@ -45,13 +45,13 @@ namespace GameEngine
         }
 
         static int explosionCount = 0;
-        public static void CreateExplosion(Vector3 pos, int teamId, int dmg, float dur, Vector3 fScale, string shader, string texture)
+        public static void CreateExplosion(Vector3 pos, int teamId, int dmg, float dur, Vector3 fScale, string shader, string texture, string clipId, float opacity)
         {
             GameObject gameObject = new GameObject();
             gameObject.name = "Explosion " + explosionCount++;
             gameObject.AddComponent(new Transform());
             gameObject.transform.position = pos;
-            gameObject.transform.scale = Vector3.Zero;
+            gameObject.transform.scale = fScale;
 
             SphereCollider collider = new SphereCollider();
             collider.radius = 0.5f;
@@ -61,6 +61,7 @@ namespace GameEngine
             renderer.modelId = "UnitSphere.obj";
             renderer.shaderId = shader;
             renderer.textureId = texture;
+            renderer.opacity = opacity;
             gameObject.AddComponent(renderer);
 
             Explosion explosion = new Explosion();
@@ -70,8 +71,18 @@ namespace GameEngine
             explosion.finalScale = fScale;
             gameObject.AddComponent(explosion);
 
+            Random rand = new Random();
+            AudioSource audioSource = new AudioSource();
+            audioSource.clipId = clipId;
+            audioSource.autoPlay = true;
+            audioSource.pitch = RandUtils.Range(rand, 0.95f, 1.05f);
+            audioSource.maxDistance = 20;
+            gameObject.AddComponent(audioSource);
+
             SceneManager.GetActiveScene().AddGameObject(gameObject);
             gameObject.Start();
+
+            gameObject.transform.scale = Vector3.Zero;
         }
     }
 }

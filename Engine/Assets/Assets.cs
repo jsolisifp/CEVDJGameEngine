@@ -157,7 +157,7 @@
             return GetAssetsPath() + "\\" + path;
         }
 
-        static string GetExtension(string path)
+        public static string GetExtension(string path)
         {
             string result = "";
             int index = path.LastIndexOf('.');
@@ -165,5 +165,9 @@
             return result;
         }
 
+        public static List<string> GetLoadedExtensions()
+        {
+             return loaders.Keys.ToList();
+        }
     }
 }
