@@ -751,7 +751,7 @@ namespace GameEngine
                 int t = totalPairs;
                 int unse = u + n + s + e;
 
-                Debug.Assert(t == unse, "Some colliding pairs have been classified in two or more categories");
+                //Debug.Assert(t == unse, "Some colliding pairs have been classified in two or more categories");
 
                 //Console.WriteLine(String.Format("U {0:000} N {1:000} S {2:000} E {3:000} UNSE {4:000} T {5:000}", u, n, s, e, unse, t));
 

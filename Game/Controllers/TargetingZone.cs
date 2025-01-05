@@ -12,15 +12,18 @@ namespace GameEngine
         IMekaController m_controller;
         public override void Start()
         {
+            if(controller == null) return;
             m_controller = controller.GetGameObject().GetComponent<MekaPlayerController>();
-            if(m_controller != null ) return;
+            if(m_controller != null) return;
+            m_controller = controller.GetGameObject().GetComponent<MekaAIController>();
+            if (m_controller != null) return;
             //Añadir los siguientes tipos de controlador aqui.
         }
 
         public override void OnTriggerEnter(Rigidbody other)
         {
             Target target = other.GetGameObject().GetComponent<Target>();
-            if( target != null ) m_controller.AddTarget( target );
+            if( target != null) m_controller.AddTarget( target );
         }
 
         public override void OnTriggerExit(Rigidbody other)

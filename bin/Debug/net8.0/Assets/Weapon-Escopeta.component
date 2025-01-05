@@ -1,5 +1,5 @@
 ___type:Weapon
-fields:18
+fields:20
 name:name
 type:String
 value:Escopeta
@@ -23,10 +23,10 @@ type:Int32
 value:20
 name:maxAmmo
 type:Int32
-value:10
+value:5
 name:ammo
 type:Int32
-value:10
+value:5
 name:spread
 type:Single
 value:10
@@ -35,7 +35,7 @@ type:String
 value:Proyectil.preset
 name:damage
 type:Int32
-value:5
+value:50
 name:explosionDamage
 type:Int32
 value:0
@@ -50,7 +50,13 @@ type:Boolean
 value:False
 name:reloadTime
 type:Single
-value:2
+value:3
+name:shootSoundId
+type:String
+value:shotgun.wav
+name:reloadSoundId
+type:String
+value:shotgunreload.wav
 name:active
 type:Boolean
 value:False

@@ -36,6 +36,7 @@ namespace GameEngine
         public string shootSoundId = "";
         public string reloadSoundId = "";
 
+
         float time;
         Preset projectile;
         AudioSource shootAudioSource;
@@ -78,6 +79,8 @@ namespace GameEngine
 
         public override void Update(float deltaTime)
         {
+            if(projectile == null) return;
+
             if(shootAudioSource == null && Engine.GetState() == Engine.State.playing)
             {
                 GameObject go = new GameObject();

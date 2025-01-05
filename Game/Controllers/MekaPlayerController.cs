@@ -233,6 +233,7 @@ namespace GameEngine
 
         public void RemoveTarget(Target target)
         {
+            if(currentTarget == target) currentTarget = null;
             targets.Remove(target);
         }
 
