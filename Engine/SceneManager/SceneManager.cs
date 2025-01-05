@@ -190,6 +190,30 @@ namespace GameEngine
                 scene.AddGameObject(go);
             }
 
+            // Ball
+
+            go = new GameObject();
+            go.name = "Ball";
+            go.AddComponent(new Transform());
+            go.transform.position = new Vector3(0, 1, 0);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "BowlingBall.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Texture1.png";
+            go.AddComponent(rendererC);
+
+            rigidC = new Rigidbody();
+            rigidC.isKinematic = false;
+            rigidC.mass = 4;
+            go.AddComponent(rigidC);
+
+            sphereC = new SphereCollider();
+            sphereC.radius = 0.1f;
+            go.AddComponent(sphereC);
+
+            scene.AddGameObject(go);
+
             // Hand Right
 
             go = new GameObject();
@@ -211,30 +235,6 @@ namespace GameEngine
             go.AddComponent(new Trigger());
 
             go.AddComponent(new Hand());
-
-            scene.AddGameObject(go);
-
-            // Ball
-
-            go = new GameObject();
-            go.name = "Ball";
-            go.AddComponent(new Transform());
-            go.transform.position = new Vector3(0,1,0);
-
-            rendererC = new Renderer();
-            rendererC.modelId = "BowlingBall.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Texture1.png";
-            go.AddComponent(rendererC);
-
-            rigidC = new Rigidbody();
-            rigidC.isKinematic = false;
-            rigidC.mass = 1;
-            go.AddComponent(rigidC);
-
-            sphereC = new SphereCollider();
-            sphereC.radius = 0.1f;
-            go.AddComponent(sphereC);
 
             scene.AddGameObject(go);
 

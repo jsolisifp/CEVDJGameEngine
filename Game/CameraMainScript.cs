@@ -16,6 +16,11 @@ namespace GameEngine
                 gameObject.transform.position = new Vector3(3.5f, 3, -2);
                 gameObject.transform.rotation = new Vector3(-20, 90, 20);
             }
+            if (GameManager.state == GameManager.State.rolling)
+            {
+                gameObject.transform.position = new Vector3(0, 1, -13);
+                gameObject.transform.rotation = new Vector3(-20, 0, 0);
+            }
             else
             {
                 gameObject.transform.position = new Vector3(0, 1, 2);

@@ -43,13 +43,11 @@ namespace GameEngine
             position.Z = MathF.Max(MathF.Min(position.Z, 0.5f), -0.5f);
             gameObject.transform.position = position;
 
-
-
             if (GameManager.state == GameManager.State.grabbing)
             {
                 if (grabbed != null)
                 {
-                    grabbed.isKinematic = true;
+                    //grabbed.isKinematic = true;
                     Transform t = grabbed.GetGameObject().transform;
                     t.position = gameObject.transform.TransformPosition(grabbedOffset);
                     t.rotation = gameObject.transform.rotation;
@@ -60,23 +58,21 @@ namespace GameEngine
                 {
                     if (grabbed != null)
                     {
-                        grabbed.isKinematic = false;
-                        if (Input.IsMouseButtonPressed(1))
-                        {
-                            grabbed.AddForce(new Vector3(0, 0, 500f), Physics.ForceMode.impulse);
-                        }
+                        //grabbed.isKinematic = false;
+                        grabbed.AddForce(new Vector3(0, 0, -15f), Physics.ForceMode.impulse);
+                        grabbed = null;
+                        GameManager.nextState = GameManager.State.rolling;
                     }
-
-                    grabbed = null;
-                    GameManager.nextState = GameManager.State.idle;
+                    else
+                    {
+                        GameManager.nextState = GameManager.State.idle;
+                    }                    
                 }
-
             }
             else // state == State.idle
             {
                 if (Input.IsMouseButtonPressed(0))
                 {
-
                     GameManager.nextState = GameManager.State.grabbing;
                 }
             }
@@ -87,19 +83,11 @@ namespace GameEngine
             {
                 if (GameManager.nextState == GameManager.State.grabbing)
                 {
-                    if (grabbed != null)
-                    {
-                        grabbed.isKinematic = true;
-                    }
+
                 }
                 else // nextState == State.idle
                 {
-                    if (grabbed != null)
-                    {
-                        grabbed.isKinematic = false;
-                        grabbed.AddForce(new Vector3(0, 0, 5), Physics.ForceMode.force);
-                        grabbed = null;
-                    }
+
                 }
 
                 GameManager.state = GameManager.nextState;

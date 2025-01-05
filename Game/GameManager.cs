@@ -12,7 +12,8 @@ namespace GameEngine
         public enum State
         {
             idle,
-            grabbing
+            grabbing,
+            rolling
         }
 
         public static State state;
