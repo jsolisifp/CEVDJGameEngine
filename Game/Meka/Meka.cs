@@ -13,7 +13,7 @@ namespace GameEngine
 {
     internal class Meka : Component
     {
-        
+
         public Transform hitBox;
 
         public Weapon leftWeapon;
@@ -152,16 +152,15 @@ namespace GameEngine
         {
             hitboxTarget = hitBox.GetGameObject().GetComponent<Target>();
             if (leftWeapon != null) leftWeapon.SetTeamId(hitboxTarget.teamId);
-            if(rightWeapon != null) rightWeapon.SetTeamId(hitboxTarget.teamId);
-            if(leftShoulderWeapon != null) leftShoulderWeapon.SetTeamId(hitboxTarget.teamId);
+            if (rightWeapon != null) rightWeapon.SetTeamId(hitboxTarget.teamId);
+            if (leftShoulderWeapon != null) leftShoulderWeapon.SetTeamId(hitboxTarget.teamId);
             if (rightShoulderWeapon != null) rightShoulderWeapon.SetTeamId(hitboxTarget.teamId);
         }
 
         Vector3 lookAtPosition;
         Vector3 up;
-        float lastDeltaTime;
-        float timeDead=0;
-        float lastExplosion=0;
+        float timeDead = 0;
+        float lastExplosion = 0;
         public override void Update(float deltaTime)
         {
 
@@ -234,6 +233,7 @@ namespace GameEngine
                 }
                 else
                 {
+                    if (gameObject.transform.rotation.X != 0 && gameObject.transform.rotation.Z != 0) gameObject.transform.rotation.Y += gameObject.transform.rotation.X;
                     gameObject.transform.rotation.X = 0;
                     gameObject.transform.rotation.Z = 0;
                 }
@@ -287,7 +287,7 @@ namespace GameEngine
                 {
                     Random random = new Random();
                     Vector3 explosion = new(RandUtils.Range(random, -1f, 1f), RandUtils.Range(random, -1f, 1f), RandUtils.Range(random, -1f, 1f));
-                    Explosion.CreateExplosion(transforms[0].TransformPosition(explosion), -1, 0, 0.5f, new Vector3(1), "NoLight.shader", "Red.png","explosion.wav",1f);
+                    Explosion.CreateExplosion(transforms[0].TransformPosition(explosion), -1, 0, 0.5f, new Vector3(1), "NoLight.shader", "Red.png", "explosion.wav", 1f);
                     lastExplosion = 0;
                 }
                 else
@@ -359,9 +359,7 @@ namespace GameEngine
                 hitBox.rotation = transforms[0].rotation;
             }
 
-            lastDeltaTime = deltaTime;
-
-            if(timeDead > 1.6)
+            if (timeDead > 1.6)
             {
                 hitBox.GetGameObject().Stop();
                 gameObject.Stop();
@@ -404,7 +402,7 @@ namespace GameEngine
                     if (position.X > currentAim.X)
                     {
                         currentAim.X += targetingSpeed * deltaTime;
-                        if(currentAim.X > position.X) currentAim.X = position.X;
+                        if (currentAim.X > position.X) currentAim.X = position.X;
                     }
                     else if (position.X < currentAim.X)
                     {
@@ -442,7 +440,7 @@ namespace GameEngine
                 timeSinceLastTarget += deltaTime;
             }
 
-            if(timeSinceLastTarget > 3) isAiming = false;
+            if (timeSinceLastTarget > 3) isAiming = false;
             else isAiming = true;
         }
 
@@ -468,13 +466,14 @@ namespace GameEngine
         public void SwapWeapon(int weapon)
         {
             Weapon tmp;
-            if (weapon == 0) 
-            { 
+            if (weapon == 0)
+            {
                 tmp = leftWeapon;
                 leftWeapon = leftShoulderWeapon;
                 leftShoulderWeapon = tmp;
             }
-            else {
+            else
+            {
                 tmp = rightWeapon;
                 rightWeapon = rightShoulderWeapon;
                 rightShoulderWeapon = tmp;
@@ -548,13 +547,13 @@ namespace GameEngine
             for (int i = -1; i < 4 && speed.Y <= 0 && !floor; i++)
             {
                 position = new Vector3(i % 2 == 0 ? -margin : margin, 0, i >= 2 ? -margin : margin);
-                floor = Physics.Raycast(gameObject.transform.TransformPosition(i!=-1?position:Vector3.Zero), -Vector3.UnitY, floorDistance, out hit);
+                floor = Physics.Raycast(gameObject.transform.TransformPosition(i != -1 ? position : Vector3.Zero), -Vector3.UnitY, floorDistance, out hit);
                 if (floor)
                 {
                     GameObject go = hit.transform.GetGameObject();
                     Rigidbody rigidbody = go.GetComponent<Rigidbody>();
                     Projectile p = go.GetComponent<Projectile>();
-                    if (rigidbody != null && p==null)
+                    if (rigidbody != null && p == null)
                     {
                         gameObject.transform.position.Y -= hit.distance;
                         speed.Y = 0;
@@ -576,15 +575,15 @@ namespace GameEngine
         float marginWalls = 0.5f;
         float marginWallHeight = 1.6f;
         float wallDistance = 1f;
-        private void CheckWalls(float deltaTime) 
+        private void CheckWalls(float deltaTime)
         {
-            if(speed == Vector3.Zero) return;
+            if (speed == Vector3.Zero) return;
             Vector3 direction = speed;
             direction.Y = 0;
             float horizontalSpeedLength = direction.Length();
             direction = Vector3.Normalize(direction);
 
-            Vector3[] positions = [direction*marginWalls, direction * marginWalls, direction * marginWalls];
+            Vector3[] positions = [direction * marginWalls, direction * marginWalls, direction * marginWalls];
             positions[1].X -= positions[0].Z;
             positions[1].Z += positions[0].X;
             positions[2].X += positions[0].Z;
@@ -595,9 +594,9 @@ namespace GameEngine
             bool wall = false;
             Physics.RaycastHit hit;
             Vector3 position;
-            for (int i = 0; i<positions.Length*2; i++)
+            for (int i = 0; i < positions.Length * 2 && !wall; i++)
             {
-                position = positions[i%positions.Length];
+                position = positions[i % positions.Length];
                 position.Y = i >= positions.Length ? marginWallHeight : 0.1f;
                 wall = Physics.Raycast(gameObject.transform.TransformPosition(position), transformedDirection, wallDistance, out hit);
                 if (wall)
@@ -607,7 +606,7 @@ namespace GameEngine
                     Projectile p = go.GetComponent<Projectile>();
                     if (rigidbody != null && p == null && go != hitBox.GetGameObject())
                     {
-                        Console.WriteLine("Name: "+go.name +"Distance: "+hit.distance +" Normal: "+ hit.normal);
+                        Console.WriteLine("Name: " + go.name + "Distance: " + hit.distance + " Normal: " + hit.normal);
                         gameObject.transform.position += hit.normal * horizontalSpeedLength * -Vector3.Dot(hit.normal, transformedDirection) * deltaTime;
                     }
                     else
@@ -617,12 +616,14 @@ namespace GameEngine
                 }
             }
 
+            isNearWall = wall;
+
         }
 
 
         public void Damage(int damage)
         {
-            hp-=damage;
+            hp -= damage;
         }
     }
 }

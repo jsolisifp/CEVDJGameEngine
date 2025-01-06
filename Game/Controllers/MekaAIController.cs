@@ -15,8 +15,13 @@ namespace GameEngine
         public Vector3 targetingOffset;
 
         public bool isTurret;
+        public bool canFly;
 
         public float preferedDistanceFromTarget;
+        public float preferedDistanceToReload;
+
+        public float aimShootMargin = 2;
+        public float distanceMargin = 2;
 
         Meka meka;
         Target mekaTarget;
@@ -30,7 +35,7 @@ namespace GameEngine
             if (mekaTransform == null) return;
             meka = mekaTransform.GetGameObject().GetComponent<Meka>();
             mekaTarget = meka.hitBox.GetGameObject().GetComponent<Target>();
-            
+
         }
 
         public override void Update(float deltaTime)
@@ -38,16 +43,17 @@ namespace GameEngine
             if (mekaTransform == null || targetingZone == null) return;
             TargetingSystem();
 
-            if(isTurret) TurretBehaviour();
+            if (isTurret) TurretBehaviour();
+            else MekaBehaviour(deltaTime);
 
-            if (meka.hp < 0) Stop();
-            
+            if (meka!=null && meka.hp < 0) Stop();
+
         }
 
         public override void Stop()
         {
             Scene scene = SceneManager.GetActiveScene();
-            if (meka.hp<=0 && !scene.GetGameObjects().Contains(gameObject))
+            if (meka!= null && meka.hp <= 0 && !scene.GetGameObjects().Contains(gameObject))
             {
                 GameObject targeting = targetingZone.GetGameObject();
                 targeting.Stop();
@@ -83,21 +89,84 @@ namespace GameEngine
             currentTarget = tmpTarget;
         }
 
-        public void TurretBehaviour()
+        private void TurretBehaviour()
         {
-            if (meka == null) return;
-
-            if (currentTarget!=null)
+            if (meka == null || meka.hp <= 0 || currentTarget == null) return;
+            meka.isTargetLock = true;
+            meka.InputMovement(Vector3.Zero, 0, currentTarget);
+            Vector3 distance = currentTarget.GetGameObject().transform.position - meka.currentAim;
+            if (distance.Length() < aimShootMargin)
             {
-                meka.InputMovement(Vector3.Zero, 0, currentTarget);
-                Vector3 distance = currentTarget.GetGameObject().transform.position - meka.currentAim;
-                if (distance.Length() < 2)
-                {
-                    meka.Shoot(0);
-                    meka.Shoot(1);
-                }
+                meka.Shoot(0);
+                meka.Shoot(1);
             }
-            
+
+        }
+
+        float timeSinceDirectionChange = 0;
+        private void MekaBehaviour(float deltaTime)
+        {
+            if (meka == null || meka.hp <= 0) return;
+
+            if (currentTarget != null)
+            {
+                meka.isTargetLock = true;
+                Vector3 currentTargetPosition = currentTarget.GetGameObject().transform.position;
+                Vector3 distanceToTarget = currentTargetPosition - gameObject.transform.position;
+                Vector3 input = new Vector3();
+
+                if (meka.isNearWall) input.Y = 1;
+
+                float targetDistance = preferedDistanceFromTarget;
+
+
+                if (meka.leftWeapon.isReloading && meka.leftShoulderWeapon.projectilePreset != "")
+                {
+                    meka.SwapWeapon(0);
+                }
+                if (meka.rightWeapon.isReloading && meka.rightShoulderWeapon.projectilePreset != "")
+                {
+                    meka.SwapWeapon(1);
+                }
+
+                if (!meka.leftWeapon.isReloading || !meka.rightWeapon.isReloading)
+                {
+                    Vector3 distance = currentTarget.GetGameObject().transform.position - meka.currentAim;
+                    if (distance.Length() < aimShootMargin)
+                    {
+                        meka.Shoot(0);
+                        meka.Shoot(1);
+                    }
+                }
+                else
+                {
+                    targetDistance =  preferedDistanceToReload;
+                }
+
+                if(canFly && currentTargetPosition.Y > gameObject.transform.position.Y + distanceMargin)
+                {
+                    input.Y = 1;
+                }
+
+                if (distanceToTarget.Length() > targetDistance + distanceMargin)
+                {
+                    input.Z = 1;
+                } else if(distanceToTarget.Length() < targetDistance - distanceMargin)
+                {
+                    input.Z = -1;
+                }
+                Vector3 inverseAim = gameObject.transform.InverseTransformPosition(meka.currentAim);
+                if (inverseAim.X > 0)
+                {
+                    input.X = -1;
+                }
+                else
+                {
+                    input.X = 1;
+                }
+
+                meka.InputMovement(input, 0, currentTarget);
+            }
         }
 
         public void AddTarget(Target target)

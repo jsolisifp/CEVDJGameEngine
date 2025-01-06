@@ -1,4 +1,3 @@
-+Sistemas de IAs simples para los enemigos.
 +Importar mas modelos de mekas y armas del tinkercad y asignarles stats para enemigos
 +Implementar elementos de incio/final del nivel y elementos que dependa de condiciones e interactuables
 +Hacer nivel de prueba
