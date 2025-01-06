@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using BepuPhysics.Constraints.Contact;
+using Silk.NET.Input;
 using Silk.NET.Vulkan;
 
 namespace GameEngine
@@ -50,6 +51,7 @@ namespace GameEngine
         public bool isAiming;
         public bool isFlying;
         public bool isTargetLock;
+        public bool isNearWall;
 
         public Vector3 currentAim;
         public float targetingSpeed;
@@ -145,14 +147,14 @@ namespace GameEngine
 
         }
 
-        Target target;
+        Target hitboxTarget;
         public override void Start()
         {
-            target = hitBox.GetGameObject().GetComponent<Target>();
-            if (leftWeapon != null) leftWeapon.SetTeamId(target.teamId);
-            if(rightWeapon != null) rightWeapon.SetTeamId(target.teamId);
-            if(leftShoulderWeapon != null) leftShoulderWeapon.SetTeamId(target.teamId);
-            if (rightShoulderWeapon != null) rightShoulderWeapon.SetTeamId(target.teamId);
+            hitboxTarget = hitBox.GetGameObject().GetComponent<Target>();
+            if (leftWeapon != null) leftWeapon.SetTeamId(hitboxTarget.teamId);
+            if(rightWeapon != null) rightWeapon.SetTeamId(hitboxTarget.teamId);
+            if(leftShoulderWeapon != null) leftShoulderWeapon.SetTeamId(hitboxTarget.teamId);
+            if (rightShoulderWeapon != null) rightShoulderWeapon.SetTeamId(hitboxTarget.teamId);
         }
 
         Vector3 lookAtPosition;
@@ -276,7 +278,7 @@ namespace GameEngine
             }
             else
             {
-                target.teamId = -1;
+                hitboxTarget.teamId = -1;
                 input = Vector3.Zero;
                 rotation = 0;
                 targetAim = null;
@@ -343,6 +345,10 @@ namespace GameEngine
                 transforms[6].LookAt(transforms[0].TransformPosition(rightLeverOffset - Meka.vectorUp), Vector3.UnitZ);
             }
 
+            SpeedControl(deltaTime);
+            CheckWalls(deltaTime);
+            CheckFloor();
+
             if (speed != Vector3.Zero)
             {
                 gameObject.transform.position += gameObject.transform.TransformDirection(speed) * deltaTime;
@@ -352,10 +358,6 @@ namespace GameEngine
                 hitBox.position = transforms[0].TransformPosition(hitboxOffset);
                 hitBox.rotation = transforms[0].rotation;
             }
-
-
-            SpeedControl(deltaTime);
-            CheckFloor();
 
             lastDeltaTime = deltaTime;
 
@@ -537,7 +539,8 @@ namespace GameEngine
         }
 
         float margin = 0.5f;
-        public void CheckFloor()
+        float floorDistance = 0.1f;
+        private void CheckFloor()
         {
             bool floor = false;
             Vector3 position;
@@ -545,7 +548,7 @@ namespace GameEngine
             for (int i = -1; i < 4 && speed.Y <= 0 && !floor; i++)
             {
                 position = new Vector3(i % 2 == 0 ? -margin : margin, 0, i >= 2 ? -margin : margin);
-                floor = Physics.Raycast(gameObject.transform.TransformPosition(i!=-1?position:Vector3.Zero), -Vector3.UnitY, 0.1f, out hit);
+                floor = Physics.Raycast(gameObject.transform.TransformPosition(i!=-1?position:Vector3.Zero), -Vector3.UnitY, floorDistance, out hit);
                 if (floor)
                 {
                     GameObject go = hit.transform.GetGameObject();
@@ -570,35 +573,52 @@ namespace GameEngine
             }
         }
 
-        Vector3 enterPosition;
-        Vector3 enterDirection;
-        public override void OnCollisionEnter(Physics.Collision collision)
+        float marginWalls = 0.5f;
+        float marginWallHeight = 1.6f;
+        float wallDistance = 1f;
+        private void CheckWalls(float deltaTime) 
         {
-            GameObject go = collision.transform.GetGameObject();
-            Projectile p = go.GetComponent<Projectile>();
-            if (p != null) return;
-            if (collision.rigidbody.isKinematic || go.@static){
-                float deltaTime = lastDeltaTime > 0.01f ? lastDeltaTime : 0.01f;
+            if(speed == Vector3.Zero) return;
+            Vector3 direction = speed;
+            direction.Y = 0;
+            float horizontalSpeedLength = direction.Length();
+            direction = Vector3.Normalize(direction);
 
-                enterDirection = speed != Vector3.Zero ?Vector3.Normalize(speed) : Vector3.Zero;
-                enterPosition = gameObject.transform.position - gameObject.transform.TransformDirection(enterDirection) * 0.1f * (deltaTime);
-                
-            }
-            
-        }
+            Vector3[] positions = [direction*marginWalls, direction * marginWalls, direction * marginWalls];
+            positions[1].X -= positions[0].Z;
+            positions[1].Z += positions[0].X;
+            positions[2].X += positions[0].Z;
+            positions[2].Z -= positions[0].X;
 
-        public override void OnCollisionStay(Physics.Collision collision)
-        {
-            GameObject go = collision.transform.GetGameObject();
-            Projectile p = go.GetComponent<Projectile>();
-            if (p != null) return ;
-            if (collision.rigidbody.isKinematic || go.@static)
+            Vector3 transformedDirection = gameObject.transform.TransformDirection(direction);
+
+            bool wall = false;
+            Physics.RaycastHit hit;
+            Vector3 position;
+            for (int i = 0; i<positions.Length*2; i++)
             {
-                
-                gameObject.transform.position = enterPosition;
-                enterPosition -= gameObject.transform.TransformDirection(enterDirection) * 0.01f;
+                position = positions[i%positions.Length];
+                position.Y = i >= positions.Length ? marginWallHeight : 0.1f;
+                wall = Physics.Raycast(gameObject.transform.TransformPosition(position), transformedDirection, wallDistance, out hit);
+                if (wall)
+                {
+                    GameObject go = hit.transform.GetGameObject();
+                    Rigidbody rigidbody = go.GetComponent<Rigidbody>();
+                    Projectile p = go.GetComponent<Projectile>();
+                    if (rigidbody != null && p == null && go != hitBox.GetGameObject())
+                    {
+                        Console.WriteLine("Name: "+go.name +"Distance: "+hit.distance +" Normal: "+ hit.normal);
+                        gameObject.transform.position += hit.normal * horizontalSpeedLength * -Vector3.Dot(hit.normal, transformedDirection) * deltaTime;
+                    }
+                    else
+                    {
+                        wall = false;
+                    }
+                }
             }
+
         }
+
 
         public void Damage(int damage)
         {

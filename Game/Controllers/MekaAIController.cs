@@ -16,6 +16,8 @@ namespace GameEngine
 
         public bool isTurret;
 
+        public float preferedDistanceFromTarget;
+
         Meka meka;
         Target mekaTarget;
 
@@ -100,13 +102,14 @@ namespace GameEngine
 
         public void AddTarget(Target target)
         {
-            if (target.teamId == -1 || target.teamId == mekaTarget.teamId) return;
+            if (target.teamId == -1 || target.teamId == mekaTarget.teamId || targets.Contains(target)) return;
             targets.Add(target);
         }
 
         public void RemoveTarget(Target target)
         {
-            if (currentTarget == target) currentTarget = null;
+            if (currentTarget == target && targets.Count > 1) currentTarget = null;
+            else if (currentTarget == target && targets.Count == 1) return;
             targets.Remove(target);
         }
 

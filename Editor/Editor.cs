@@ -84,7 +84,7 @@ namespace GameEngine
             Input.SetCursorVisible(true);
 
             collidersViewEnabled = true;
-            Physics.SetRenderCollidersEnabled(true);
+            Physics.SetRenderCollidersEnabled(false);
 
             sceneViewEnabled = true;
             gameObjectViewEnabled = true;
