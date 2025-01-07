@@ -114,6 +114,7 @@ namespace GameEngine
             Assets.Init();
             Input.Init(window);
             Input.onKeyDown += OnKeyDown;
+            Audio.Init();
             SceneManager.Init(window);
             Render.Init(window);
             Physics.Init(window);
@@ -153,6 +154,7 @@ namespace GameEngine
             Physics.Finish();
             Render.Finish();
             SceneManager.Finish();
+            Audio.Finish();
             Input.onKeyDown -= OnKeyDown;
             Input.Finish();
             Assets.Finish();

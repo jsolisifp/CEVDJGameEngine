@@ -2,6 +2,7 @@
 using Silk.NET.Assimp;
 using Silk.NET.Windowing;
 using System.Numerics;
+using GameEngine;
 
 namespace GameEngine
 {
@@ -117,6 +118,8 @@ namespace GameEngine
             SphereCollider sphereC;
             Rigidbody rigidC;
             Trigger triggerC;
+            AudioSource audioSourceC;
+            AudioListener audioListenerC;
 
             go = new GameObject();
             go.name = "DirectionalLight";
@@ -166,31 +169,69 @@ namespace GameEngine
 
             }
 
-            //Pin
+            //BowlingAudio
+            /*
             go = new GameObject();
-            go.name = "BowlingPin";
+            go.name = "AudioSource";
+            go.@static = true;
             go.AddComponent(new Transform());
-
-            go.transform.position = new Vector3(0, 0, -10);
+            go.transform.position = new Vector3(0, 10, 10);
 
             rendererC = new Renderer();
-            rendererC.modelId = "BowlingPin.obj";
+            rendererC.textureId = "Blue.png";
+            rendererC.modelId = "UnitSphere.obj";
             rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Red.png";
-
             go.AddComponent(rendererC);
 
-            rigidC = new Rigidbody();
-            rigidC.isKinematic = false;
-            rigidC.mass = 2;
+            audioSourceC = new AudioSource();
+            audioSourceC.clipId = "explosion.wav";
 
-            go.AddComponent(rigidC);
+            go.AddComponent(audioSourceC);
 
-            boxC = new BoxCollider();
-            boxC.size = new Vector3(0.2f, 0.1f, 0.2f);
-
-            go.AddComponent(boxC);
             scene.AddGameObject(go);
+            */
+            //Pin
+
+            float pinSpacing = 0.3f; 
+            int[] rows = {4, 3, 2, 1}; 
+            float startZ = -10; 
+            float startX = 0;
+
+            foreach (int row in rows)
+            {
+                for (int i = 0; i < row; i++)
+                {
+
+                    float xOffset = -((row - 1) * pinSpacing / 2) + (i * pinSpacing);
+                    float x = startX + xOffset;
+                    float z = startZ - (rows.Length - row) * pinSpacing;
+
+                    go = new GameObject();
+                    go.name = "BowlingPin";
+                    go.AddComponent(new Transform());
+
+                    go.transform.position = new Vector3(x, 1, z);
+
+                    rendererC = new Renderer();
+                    rendererC.modelId = "BowlingPin.obj";
+                    rendererC.shaderId = "Default.shader";
+                    rendererC.textureId = "Red.png";
+
+                    go.AddComponent(rendererC);
+
+                    rigidC = new Rigidbody();
+                    rigidC.isKinematic = false;
+                    rigidC.mass = 2;
+
+                    go.AddComponent(rigidC);
+
+                    boxC = new BoxCollider();
+                    boxC.size = new Vector3(0.2f, 0.1f, 0.2f);
+
+                    go.AddComponent(boxC);
+                    scene.AddGameObject(go);
+                }
+            }
 
             //Ball
             go = new GameObject();
@@ -205,7 +246,7 @@ namespace GameEngine
             rendererC.textureId = "Blue.png";
 
             go.AddComponent(rendererC);
-          
+
             rigidC = new Rigidbody();
             rigidC.isKinematic = false;
             rigidC.mass = 4;
@@ -243,10 +284,13 @@ namespace GameEngine
             go.AddComponent(new Transform());
 
             go.transform.position = new Vector3(0, 1, 3);
-            go.transform.rotation = new Vector3(-20, 0, 0);  
+            go.transform.rotation = new Vector3(-30, 0, 0);  
 
             cameraC = new Camera();
             go.AddComponent(cameraC);
+
+            audioListenerC = new AudioListener();
+            go.AddComponent(audioListenerC);
 
             scene.AddGameObject(go);
 
@@ -264,7 +308,7 @@ namespace GameEngine
             go.AddComponent(rendererC);
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(0.5f, 0.5f, 0.12f);
+            boxC.size = new Vector3(0.3f, 0.3f, 0.3f);
 
             go .AddComponent(boxC);
 
