@@ -96,6 +96,10 @@ namespace GameEngine
 
                 if (!Input.IsMouseButtonPressed(0))
                 {
+                    Vector3 forwardDirection = gameObject.transform.rotation * Vector3.UnitZ;
+                    float launchSpeed = 5.0f;
+                    t.position = forwardDirection * launchSpeed;
+
                     nextState = State.idle;
                 }
             }
