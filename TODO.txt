@@ -1,3 +1,6 @@
-+Importar mas modelos de mekas y armas del tinkercad y asignarles stats para enemigos
+TODO para cuando vuelva de Japon
 +Implementar elementos de incio/final del nivel y elementos que dependa de condiciones e interactuables
-+Hacer nivel de prueba
++Seguir puliendo la camara y controles
++Hacer varios tipos de enemigos
++Mirar como implementar multi
++Hacer varios niveles y lo que surja
