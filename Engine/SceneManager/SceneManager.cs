@@ -184,7 +184,23 @@ namespace GameEngine
                 rendererC = new Renderer();
                 rendererC.modelId = props[i];
                 rendererC.shaderId = "Default.shader";
-                rendererC.textureId = "Texture1.png";
+                if (propsNames[i] == "BowlingCentralLane" || propsNames[i] == "BowlingCover" || propsNames[i] == "BowlingPlatform")
+                {
+                    rendererC.textureId = "MarronClaro.png";
+                }
+                else if (propsNames[i] == "BowlingMarksArrows" || propsNames[i] == "BowlingMarksDots" || propsNames[i] == "BowlingLaneLeft" || propsNames[i] == "BowlingLaneRight")
+                {
+                    rendererC.textureId = "Marron.png";
+                }
+                else if (propsNames[i] == "BowlingPlacedPins")
+                {
+                    rendererC.textureId = "Blanco.png";
+                }
+                else
+                {
+                    rendererC.textureId = "Texture1.png";
+                }
+                
                 go.AddComponent(rendererC);
 
                 scene.AddGameObject(go);
@@ -200,7 +216,7 @@ namespace GameEngine
             rendererC = new Renderer();
             rendererC.modelId = "BowlingBall.obj";
             rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Texture1.png";
+            rendererC.textureId = "Negro.png";
             go.AddComponent(rendererC);
 
             rigidC = new Rigidbody();
@@ -211,6 +227,8 @@ namespace GameEngine
             sphereC = new SphereCollider();
             sphereC.radius = 0.1f;
             go.AddComponent(sphereC);
+
+            cameraMSC.ball = go.transform;
 
             scene.AddGameObject(go);
 

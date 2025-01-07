@@ -9,6 +9,7 @@ namespace GameEngine
 {
     internal class CameraMainScript : Component
     {
+        public Transform ball;
         public override void Update(float deltaTime)
         {
             if (GameManager.state == GameManager.State.grabbing && Input.IsMouseButtonPressed(1))
@@ -18,7 +19,7 @@ namespace GameEngine
             }
             if (GameManager.state == GameManager.State.rolling)
             {
-                gameObject.transform.position = new Vector3(0, 1, -13);
+                gameObject.transform.position = ball.position + new Vector3(0, 1, 1.5f);
                 gameObject.transform.rotation = new Vector3(-20, 0, 0);
             }
             else
