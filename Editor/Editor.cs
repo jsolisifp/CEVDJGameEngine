@@ -353,17 +353,18 @@ namespace GameEngine
                 {
                     Scene scene = SceneManager.GetActiveScene();
                     string id = SceneManager.GetActiveSceneAssetId();
-                    if (id == null)
-                    {
-                        openSaveSceneModal = true;
-                        modalSaveScenePlayAfter = true;
-                    }
-                    else
-                    {
-                        SceneSerializer.Serialize(scene, Assets.GetAssetsPath() + "\\" + id);
+                    //if (id == null)
+                    //{
+                        //openSaveSceneModal = true;
+                        //modalSaveScenePlayAfter = true;
+                    //}
+                    //else
+                    //{
+                        //SceneSerializer.Serialize(scene, Assets.GetAssetsPath() + "\\" + id);
+                        SceneManager.CreateDefaultScene();
                         Engine.Play();
                         editorView = false;
-                    }
+                    //}
 
                 }
 

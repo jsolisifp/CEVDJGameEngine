@@ -98,7 +98,7 @@ namespace GameEngine
             return activeSceneId;
         }
 
-        static Scene CreateDefaultScene()
+        public static Scene CreateDefaultScene()
         {
             Scene scene = new Scene();
 
@@ -115,6 +115,28 @@ namespace GameEngine
             Rigidbody rigidC;
             Trigger triggerC;
             CameraMainScript cameraMSC;
+            GameManager gameManagerC;
+            AudioSource audioSourceC;
+
+            // Game Manager
+
+            go = new GameObject();
+            go.name = "GameManager";
+            go.AddComponent(new Transform());
+
+            AudioListener audioListener = new AudioListener();
+            go.AddComponent(audioListener);
+
+            audioSourceC = new AudioSource();
+            audioSourceC.clipId = "BowlingWiiMusic.wav";
+            audioSourceC.listener = audioListener;
+            go.AddComponent(audioSourceC);
+
+            gameManagerC = new GameManager();
+            gameManagerC.audioSource = audioSourceC;
+            go.AddComponent(gameManagerC);
+
+            scene.AddGameObject(go);
 
             // Directional Light
 

@@ -18,5 +18,12 @@ namespace GameEngine
 
         public static State state;
         public static State nextState;
+
+        public AudioSource audioSource;
+
+        public override void Start()
+        {
+            audioSource.Play();
+        }
     }
 }

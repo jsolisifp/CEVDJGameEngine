@@ -70,6 +70,11 @@ namespace GameEngine
                         writer.WriteLine("type:" + type.Name);
 
                         string valueString;
+                        if (typeName == "Single" || typeName == "Int32" ||
+                            typeName == "String" || typeName == "Boolean")
+                        {
+                            valueString = value.ToString();
+                        }
 
                         if (typeName == "String")
                         {

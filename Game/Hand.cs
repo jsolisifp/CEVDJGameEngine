@@ -14,6 +14,7 @@ namespace GameEngine
         Rigidbody grabbed;
         Vector2 previousMousePosition;
 
+        Rigidbody Rigidbody = new Rigidbody();
         public override void Start()
         {
             grabbed = null;
@@ -47,7 +48,7 @@ namespace GameEngine
             {
                 if (grabbed != null)
                 {
-                    //grabbed.isKinematic = true;
+                    grabbed.isKinematic = true;
                     Transform t = grabbed.GetGameObject().transform;
                     t.position = gameObject.transform.TransformPosition(grabbedOffset);
                     t.rotation = gameObject.transform.rotation;
@@ -58,7 +59,8 @@ namespace GameEngine
                 {
                     if (grabbed != null)
                     {
-                        //grabbed.isKinematic = false;
+                        grabbed.isKinematic = false;
+                        FixedUpdate(0);
                         grabbed.AddForce(new Vector3(0, 0, -15f), Physics.ForceMode.impulse);
                         grabbed = null;
                         GameManager.nextState = GameManager.State.rolling;
