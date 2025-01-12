@@ -65,6 +65,8 @@ namespace GameEngine
             public List<Contact> contactList;
             public int contactsOffset;
             public int contactsCount;
+            public Rigidbody OtherRigidbody => rigidbody;
+            public GameObject OtherGameObject => rigidbody.GetGameObject();
         };
 
         public struct BodyOwner

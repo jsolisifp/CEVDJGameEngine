@@ -192,6 +192,7 @@ namespace GameEngine
             SphereCollider sphereC;
             Rigidbody rigidC;
             Trigger triggerC;
+            List<Pin> pins = new List<Pin>();
 
             go = CreateGameObject("DirectionalLight", false, Vector3.Zero, new Vector3(45, 0, 0));
             AddDirectionalLight(go);
@@ -201,11 +202,7 @@ namespace GameEngine
             AddCamera(go);
             scene.AddGameObject(go);
 
-            string[] props = {"", };
-
-            string[] propsNames = {"CoverLane", };
-
-
+            // Crear pista y objetos estáticos
             go = CreateGameObject("BowlingCentralLane");
             AddRenderer(go, "BowlingCentralLane.obj");
             scene.AddGameObject(go);
@@ -234,9 +231,9 @@ namespace GameEngine
             AddRenderer(go, "BowlingMarksDots.obj");
             scene.AddGameObject(go);
 
-            go = CreateGameObject("BowlingPlacedPins", true);
-            AddRenderer(go, "BowlingPlacedPins.obj");
-            scene.AddGameObject(go);
+            //go = CreateGameObject("BowlingPlacedPins", true);
+            //AddRenderer(go, "BowlingPlacedPins.obj");
+            //scene.AddGameObject(go);
 
             go = CreateGameObject("BowlingPlatform, true");
             AddRenderer(go, "BowlingPlatform.obj");
@@ -252,6 +249,73 @@ namespace GameEngine
             AddSphereCollider(go, 0.12f);
             AddRigidbody(go, false);
             scene.AddGameObject(go);
+
+            // Crear los pines individualmente
+            //Vector3 pinStartPosition = new Vector3(0, 0, -23.5f);
+            //float pinSpacing = 0.25f;  // Espaciado entre pines
+            //int pinIndex = 0;
+
+            //for (int row = 0; row < 4; row++)
+            //{
+            //    for (int col = 0; col <= row; col++)
+            //    {
+            //        // Ajuste manual de los pines con coordenadas fijas al final de la pista
+            //        Vector3 pinPosition = pinStartPosition + new Vector3(col * pinSpacing - (row * pinSpacing / 2), 0, row * pinSpacing);
+            //        go = CreateGameObject($"Pin_{pinIndex}", false, pinPosition);
+            //        AddRenderer(go, "BowlingPin.obj");
+            //        AddBoxCollider(go, new Vector3(0.1f, 0.3f, 0.1f));
+            //        AddRigidbody(go, false);
+            //        Pin pinComponent = new Pin();
+            //        go.AddComponent(pinComponent);
+            //        pins.Add(pinComponent);
+            //        scene.AddGameObject(go);
+            //        pinIndex++;
+            //    }
+            //}
+
+            Vector3 pinStartPosition = new Vector3(0, 0, -23.5f);
+            float pinSpacing = 0.25f;
+            int pinIndex = 0;
+
+            for (int row = 0; row < 4; row++)
+            {
+                for (int col = 0; col <= row; col++)
+                {
+                    Vector3 pinPosition = pinStartPosition + new Vector3(col * pinSpacing - (row * pinSpacing / 2), 0, row * pinSpacing);
+
+                    go = CreateGameObject($"Pin_{pinIndex}", false, pinPosition);
+                   
+                    AddRenderer(go, "BowlingPin.obj");
+
+                    AddBoxCollider(go, new Vector3(0.1f, 0.3f, 0.1f));
+
+                    Rigidbody rb = new Rigidbody();
+                    rb.isKinematic = true;  
+                    rb.mass = 1.0f;
+                    rb.speed = Vector3.Zero;
+                    rb.angularSpeed = Vector3.Zero;
+                    go.AddComponent(rb);
+                   
+                    Pin pinComponent = new Pin();
+                    go.AddComponent(pinComponent);
+
+                    pins.Add(pinComponent);
+                    scene.AddGameObject(go);
+                    pinIndex++;
+                }
+            }
+
+            GameManager.Instance.InitializePins(pins);
+
+            // ✅ Crear el panel de puntuación al inicio del juego
+            GameObject scorePanelObject = CreateGameObject("ScorePanel", true);
+            ScorePanel scorePanel = new ScorePanel();
+            scorePanelObject.AddComponent(scorePanel);
+            scene.AddGameObject(scorePanelObject);
+
+            // ✅ Inicializar el panel y vincularlo con el GameManager
+            scorePanel.Initialize(5);
+            GameManager.Instance.SetScorePanel(scorePanel);
 
             go = CreateGameObject("HandRight", false, new Vector3(0, 0.260f, 0));
             AddRenderer(go, "HandRight.obj");
