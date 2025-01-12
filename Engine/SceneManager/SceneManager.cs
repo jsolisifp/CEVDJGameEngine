@@ -98,6 +98,82 @@ namespace GameEngine
             return activeSceneId;
         }
 
+        static GameObject CreateGameObject(string name, bool @static = false, Vector3 position = new Vector3(), Vector3 rotation = new Vector3())
+        {
+            GameObject g = new GameObject();
+
+            g.name = name;
+            g.@static = @static;
+            g.AddComponent(new Transform());
+            g.transform.position = position;
+            g.transform.rotation = rotation;
+            g.transform.scale = Vector3.One;
+
+            return g;
+        }
+
+        static GameObject AddRenderer(GameObject g, string model = "UnitBox.obj", string shader = "Default.shader", string texture = "Texture1.png")
+        {
+            Renderer c = new Renderer();
+            c.modelId = model;
+            c.shaderId = shader;
+            c.textureId = texture;
+            g.AddComponent(c);
+            return g;
+        }
+
+        static GameObject AddRigidbody(GameObject g, bool isKinematic = false, float mass = 1.0f, Vector3 speed = new Vector3(), Vector3 angularSpeed = new Vector3())
+        {
+            Rigidbody c = new Rigidbody();
+            c.mass = mass;
+            c.isKinematic = isKinematic;
+            c.speed = speed;
+            c.angularSpeed = angularSpeed;
+            g.AddComponent(c);
+            return g;
+        }
+
+        static GameObject AddTrigger(GameObject g)
+        {
+            Trigger c = new Trigger();
+            g.AddComponent(c);
+            return g;
+        }
+
+        static GameObject AddBoxCollider(GameObject g, Vector3 size)
+        {
+            BoxCollider c = new BoxCollider();
+            c.size = size;
+            g.AddComponent(c);
+            return g;
+        }
+
+        static GameObject AddSphereCollider(GameObject g, float radius)
+        {
+            SphereCollider c = new SphereCollider();
+            c.radius = radius;
+            g.AddComponent(c);
+            return g;
+        }
+
+        static GameObject AddCamera(GameObject g, float fov = 30, Vector3 backgroundColor = new Vector3())
+        {
+            Camera c = new Camera();
+            c.fov = fov;
+            c.backgroundColor = backgroundColor;
+            g.AddComponent(c);
+            return g;
+        }
+
+        static GameObject AddDirectionalLight(GameObject g, float intensity = 1.0f)
+        {
+            DirectionalLight c = new DirectionalLight();
+            c.color = Vector3.One;
+            c.intensity = intensity;
+            g.AddComponent(c);
+            return g;
+        }
+
         static Scene CreateDefaultScene()
         {
             Scene scene = new Scene();
@@ -117,17 +193,12 @@ namespace GameEngine
             Rigidbody rigidC;
             Trigger triggerC;
 
-            go = new GameObject();
-            go.name = "DirectionalLight";
-            go.AddComponent(new Transform());
+            go = CreateGameObject("DirectionalLight", false, Vector3.Zero, new Vector3(45, 0, 0));
+            AddDirectionalLight(go);
+            scene.AddGameObject(go);
 
-            directionalLightC = new DirectionalLight();
-            directionalLightC.color = new Vector3(1, 0.961f, 0.753f);
-            directionalLightC.intensity = 1.0f;
-            go.transform.rotation = new Vector3(45, 0, 0);
-
-            go.AddComponent(directionalLightC);
-
+            go = CreateGameObject("MainCamera", false, new Vector3(0, 0.5f, 1.5f), new Vector3(-10, 0, 0));           
+            AddCamera(go);
             scene.AddGameObject(go);
 
             string[] props = {"", };
@@ -135,64 +206,58 @@ namespace GameEngine
             string[] propsNames = {"CoverLane", };
 
 
-            go = new GameObject();
-            go.name = propsNames[i];
-            go.AddComponent(new Transform());
-
-            rendererC = new Renderer();
-            rendererC.modelId = props[i];
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Texture1.png";
-
-            go.AddComponent(rendererC);
+            go = CreateGameObject("BowlingCentralLane");
+            AddRenderer(go, "BowlingCentralLane.obj");
             scene.AddGameObject(go);
 
-            go = new GameObject();
-            go.name = "GroundCollider";
-            go.AddComponent(new Transform());
-            go.@static = true;
-            boxC = new BoxCollider();
-            boxC.size = new Vector3(100,0.2f,100);
-
-            go.AddComponent(boxC);
-
-            rigidC = new Rigidbody();
-            rigidC.isKinematic = true;
-            rigidC.mass = 1;
-            go.AddComponent(rigidC);
-
+            go = CreateGameObject("BowlingCover", true);
+            AddRenderer(go, "BowlingCover.obj");
             scene.AddGameObject(go);
 
-            go = new GameObject();
-            go.name = "HandRight";
-            go.AddComponent(new Transform());
+            go = CreateGameObject("BowlingGround", true);
+            AddRenderer(go, "BowlingGround.obj");
+            scene.AddGameObject(go);
 
-            rendererC = new Renderer();
-            rendererC.modelId = "HandleRight.obj";
-            rendererC.shaderId = "Default.shader";
-            rendererC.textureId = "Texture1.png";
-            go.AddComponent(rendererC);
+            go = CreateGameObject("BowlingLaneLeft", true);
+            AddRenderer(go, "BowlingLaneLeft.obj");
+            scene.AddGameObject(go);
 
-            boxC = new BoxCollider();
-            boxC.size = new Vector3(0.5f, 0.01f, 0.12f);
-            go.AddComponent(boxC);
+            go = CreateGameObject("BowlingLaneRight", true);
+            AddRenderer(go, "BowlingLaneRight.obj");
+            scene.AddGameObject(go);
 
-            go.AddComponent(new Trigger());
+            go = CreateGameObject("BowlingMarksArrows", true);
+            AddRenderer(go, "BowlingMarksArrows.obj");
+            scene.AddGameObject(go);
 
+            go = CreateGameObject("BowlingMarksDots", true);
+            AddRenderer(go, "BowlingMarksDots.obj");
+            scene.AddGameObject(go);
 
+            go = CreateGameObject("BowlingPlacedPins", true);
+            AddRenderer(go, "BowlingPlacedPins.obj");
+            scene.AddGameObject(go);
 
+            go = CreateGameObject("BowlingPlatform, true");
+            AddRenderer(go, "BowlingPlatform.obj");
+            scene.AddGameObject(go);
 
+            go = CreateGameObject("Floor", true, new Vector3(0, -0.1f, 0));
+            AddBoxCollider(go, new Vector3(100, 0.2f, 100));
+            AddRigidbody(go);
+            scene.AddGameObject(go);
 
+            go = CreateGameObject("Ball", false, new Vector3(0, 0.5f, 0));
+            AddRenderer(go, "BowlingBall.obj");
+            AddSphereCollider(go, 0.12f);
+            AddRigidbody(go, false);
+            scene.AddGameObject(go);
 
-
-            go = new GameObject();
-            go.name = "MainCamera";
-            go.AddComponent(new Transform());
-
-            go.transform.position = new Vector3(0, 0.6f, 2);
-            go.transform.rotation = new Vector3(-20, 0, 0);
-            cameraC = new Camera();
-            go.AddComponent(cameraC);
+            go = CreateGameObject("HandRight", false, new Vector3(0, 0.260f, 0));
+            AddRenderer(go, "HandRight.obj");
+            AddSphereCollider(go, 0.12f);
+            AddTrigger(go);
+            go.AddComponent(new Hand());
             scene.AddGameObject(go);
             
             return scene;

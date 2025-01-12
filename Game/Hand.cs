@@ -1,5 +1,4 @@
-﻿using Silk.NET.GLFW;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -10,129 +9,88 @@ namespace GameEngine
 {
     internal class Hand : Component
     {
+        public Vector3 grabbedOffset = new Vector3(-0.05f, -0.1f, -0.1f);
+
         enum State
         {
-            idle, 
+            idle,
             grabbing
-        }
+        };
+        
+        Vector2 mousePrevious;
 
+        State state;
+        State nextState;
 
         Rigidbody grabbed;
 
-        State state;
-        State nextstate;
-
-        Vector2 previousMousePosition;
         public override void Start()
         {
-            grabbed = null;
-            state = State.idle;
-            nextstate = State.idle;
+            mousePrevious = Input.GetMousePosition();
 
-            previousMousePosition = Input.GetMousePosition();
+            nextState = State.idle;
+            nextState = State.idle;
+
         }
 
         public override void Update(float deltaTime)
         {
-            Vector2 mouseposition = Input.GetMousePosition();
-            Vector2 deltaMousePosition = mouseposition - previousMousePosition;
 
-            if (Input.IsMouseButtonPressed(1))
+            if(deltaTime > 0)
             {
-                gameObject.transform.position += 0.02f * new Vector3(deltaMousePosition.X,deltaMousePosition.Y, 0);
-            }
-            else
-            {
-                gameObject.transform.position += 0.02f * new Vector3(deltaMousePosition.X, 0, deltaMousePosition.Y);
-            }
-            previousMousePosition = mouseposition;
+                Vector2 mouseDelta = Input.GetMousePosition() - mousePrevious;
 
-            Vector3 position = gameObject.transform.position;
+                if(Input.IsMouseButtonPressed(1))
+                { gameObject.transform.position += 0.01f * new Vector3(mouseDelta.X, -mouseDelta.Y, 0); }
+                else { gameObject.transform.position += 0.01f * new Vector3(mouseDelta.X, 0, mouseDelta.Y); }
 
-            if (position.X < -3.0f)
-            {
-                position.X = -2.0f;
-            }else if(position.X > 2.0f)
-            {
-                position.X = 2.0f;
+                mousePrevious = Input.GetMousePosition();
             }
 
-            if (position.Y < 0f)
+            Vector3 p = gameObject.transform.position;
+            p.X = MathF.Max(MathF.Min(p.X, 0.450f), -0.450f);
+            p.Y = MathF.Max(MathF.Min(p.Y, 0.540f), 0.260f);
+            p.Z = MathF.Max(MathF.Min(p.Z, 0.5f), -0.5f);
+            gameObject.transform.position = p;
+
+            if(state == State.grabbing)
             {
-                position.Y = 0.0f;
-            }
-            else if (position.Y > 1.0f)
-            {
-                position.Y = 1.0f;
-            }
-
-
-
-            if (position.Z < -0.5f)
-            {
-                position.Z = -0.5f;
-            }
-            else if (position.Z > 2.5f)
-            {
-                position.Z = 2.5f;
-            }
-
-            gameObject.transform.position = position;
-
-
-
-            if (state == State.idle) 
-            {
-                //comportamiento normal cuando no tengo objeto
-
-
-            }
-            else // state == State.grabbing
-            {
-                //Comportamiento normal tengo objeto
                 Transform t = grabbed.GetGameObject().transform;
-                t.position = gameObject.transform.position;
+                t.position = gameObject.transform.TransformPosition(grabbedOffset);
                 t.rotation = gameObject.transform.rotation;
+                grabbed.speed = new Vector3(0, 0, -5f);
 
-                //Tengo que cambiar de estado?
-                if (!Input.IsMouseButtonPressed(0))
+                if(!Input.IsMouseButtonPressed(0))
                 {
-                    nextstate = State.idle;
+                    nextState = State.idle;
                 }
             }
 
-            //Cambios de estado
-            if (state != nextstate)
+            if(state != nextState)
             {
-                if (nextstate == State.grabbing)
+                if(nextState == State.grabbing)
                 {
-                    //Comportamiento al entrar en grabbing
                     grabbed.isKinematic = true;
-
                 }
-                else //nextState == State.idle
+                else
                 {
-                    //Comportamiento al entrar en idle
-
+                    grabbed.isKinematic = false;
+                    grabbed = null;
                 }
 
-
-                state = nextstate;
+                state = nextState;
             }
+
+            
         }
 
-
-        public override void OnTriggerEnter(Rigidbody other)
+        public override void OnTriggerStay(Rigidbody other)
         {
-            if (state == State.idle && Input.IsMouseButtonPressed(0) && other.GetGameObject().name == "BowlingBall")
+            if(other.GetGameObject().name == "Ball" && Input.IsMouseButtonPressed(0))
             {
                 grabbed = other;
-                nextstate= State.grabbing;
+                nextState = State.grabbing;
             }
-
-
         }
-
-
     }
 }
