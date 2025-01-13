@@ -349,6 +349,7 @@ namespace GameEngine
             rigidC = new Rigidbody();
             rigidC.isKinematic = true;
             rigidC.mass = 1;
+            rigidC.friction = 1.2f;
             go.AddComponent(rigidC);
 
             boxC = new BoxCollider();

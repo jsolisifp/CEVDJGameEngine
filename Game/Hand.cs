@@ -59,7 +59,7 @@ namespace GameEngine
                     if (grabbed != null)
                     {
                         //grabbed.isKinematic = false;
-                        grabbed.AddForce(new Vector3(0, 0, -80f), Physics.ForceMode.impulse);
+                        grabbed.AddForce(new Vector3(0, 0, -70f), Physics.ForceMode.impulse);
                         grabbed = null;
                         GameManager.nextState = GameManager.State.rolling;
                     }

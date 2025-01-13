@@ -287,7 +287,15 @@ namespace GameEngine
 
                 }
 
-                pairMaterial.FrictionCoefficient = 1f;
+                if (ownerA.GetRigidbody() != null && ownerB.GetRigidbody() != null) 
+                {
+                    pairMaterial.FrictionCoefficient = Math.Max(ownerA.GetRigidbody().friction, ownerB.GetRigidbody().friction);
+                }
+                else
+                {
+                    pairMaterial.FrictionCoefficient = 1f;
+                }
+
                 pairMaterial.MaximumRecoveryVelocity = 10f;
                 pairMaterial.SpringSettings = new SpringSettings(30, 1);
 

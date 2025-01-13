@@ -11,6 +11,7 @@ namespace GameEngine
         public Vector3 speed = new Vector3(0, 0, 0);
         public Vector3 angularSpeed = new Vector3(0, 0, 0);
 
+        public float friction = 1f;
         public float mass = 1.0f;
         public bool isKinematic;
 
