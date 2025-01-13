@@ -72,9 +72,9 @@ namespace GameEngine
             collidersViewEnabled = true;
             Physics.SetRenderCollidersEnabled(true);
 
-            sceneViewEnabled = true;
-            gameObjectViewEnabled = true;
-            assetsViewEnabled = true;
+            sceneViewEnabled = false;
+            gameObjectViewEnabled = false;
+            assetsViewEnabled = false;
 
             selectedAssetId = null;
 
