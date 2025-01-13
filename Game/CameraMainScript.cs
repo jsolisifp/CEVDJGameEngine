@@ -17,10 +17,14 @@ namespace GameEngine
                 gameObject.transform.position = new Vector3(3.5f, 3, -2);
                 gameObject.transform.rotation = new Vector3(-20, 90, 20);
             }
-            if (GameManager.state == GameManager.State.rolling)
+            else if (GameManager.state == GameManager.State.rolling)
             {
                 gameObject.transform.position = ball.position + new Vector3(0, 1, 1.5f);
                 gameObject.transform.rotation = new Vector3(-20, 0, 0);
+            }
+            else if (GameManager.state == GameManager.State.hitting)
+            {
+
             }
             else
             {

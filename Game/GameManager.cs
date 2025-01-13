@@ -13,7 +13,8 @@ namespace GameEngine
         {
             idle,
             grabbing,
-            rolling
+            rolling,
+            hitting
         }
 
         public static State state;
@@ -24,6 +25,16 @@ namespace GameEngine
         public override void Start()
         {
             audioSource.Play();
+        }
+
+        public override void Update(float deltaTime)
+        {
+            // Cambios de estado
+
+            if (GameManager.state != GameManager.nextState)
+            {
+                GameManager.state = GameManager.nextState;
+            }
         }
     }
 }

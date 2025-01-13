@@ -1,4 +1,5 @@
-﻿using Silk.NET.Assimp;
+﻿using GameEngine.Game;
+using Silk.NET.Assimp;
 using Silk.NET.Windowing;
 using System.Numerics;
 
@@ -173,20 +174,20 @@ namespace GameEngine
             string[] props =
             {
                 "BowlingCentralLane.obj",
-                "BowlingCover.obj",
+                //"BowlingCover.obj",
                 "BowlingGround.obj",
                 "BowlingLaneLeft.obj",
                 "BowlingLaneRight.obj",
                 "BowlingMarksArrows.obj",
                 "BowlingMarksDots.obj",
                 "BowlingPlacedPins.obj",
-                "BowlingPlatform"
+                "BowlingPlatform.obj"
             };
 
             string[] propsNames =
             {
                 "BowlingCentralLane",
-                "BowlingCover",
+                //"BowlingCover",
                 "BowlingGround",
                 "BowlingLaneLeft",
                 "BowlingLaneRight",
@@ -201,7 +202,6 @@ namespace GameEngine
                 go = new GameObject();
                 go.name = propsNames[i];
                 go.AddComponent(new Transform());
-                go.transform.position = new Vector3(0, 0, 5);
 
                 rendererC = new Renderer();
                 rendererC.modelId = props[i];
@@ -214,16 +214,74 @@ namespace GameEngine
                 {
                     rendererC.textureId = "Marron.png";
                 }
-                else if (propsNames[i] == "BowlingPlacedPins")
-                {
-                    rendererC.textureId = "Blanco.png";
-                }
                 else
                 {
                     rendererC.textureId = "Texture1.png";
                 }
                 
                 go.AddComponent(rendererC);
+
+                scene.AddGameObject(go);
+            }
+
+            // Pins
+
+            for (int i = 1; i <= 10; i++)
+            {
+                go = new GameObject();
+                go.name = "BowlingPin" + i;
+                go.AddComponent(new Transform());
+
+                switch (i)
+                {
+                    case 1:
+                        go.transform.position = new Vector3(0, 0.19f, -22.86f);
+                        break;
+                    case 2:
+                        go.transform.position = new Vector3(-0.153f, 0.19f, -23.124f);
+                        break;
+                    case 3:
+                        go.transform.position = new Vector3(0.153f, 0.19f, -23.124f);
+                        break;
+                    case 4:
+                        go.transform.position = new Vector3(-0.305f, 0.19f, -23.387f);
+                        break;
+                    case 5:
+                        go.transform.position = new Vector3(0, 0.19f, -23.387f);
+                        break;
+                    case 6:
+                        go.transform.position = new Vector3(0.305f, 0.19f, -23.387f);
+                        break;
+                    case 7:
+                        go.transform.position = new Vector3(-0.458f, 0.19f, -23.65f);
+                        break;
+                    case 8:
+                        go.transform.position = new Vector3(-0.105f, 0.19f, -23.65f);
+                        break;
+                    case 9:
+                        go.transform.position = new Vector3(0.153f, 0.19f, -23.65f);
+                        break;
+                    case 10:
+                        go.transform.position = new Vector3(0.458f, 0.19f, -23.65f);
+                        break;
+                    default:
+                        break;
+                }
+
+                rendererC = new Renderer();
+                rendererC.modelId = "BowlingPin.obj";
+                rendererC.shaderId = "Default.shader";
+                rendererC.textureId = "Blanco.png";
+                go.AddComponent(rendererC);
+
+                rigidC = new Rigidbody();
+                rigidC.isKinematic = false;
+                rigidC.mass = 1.5f;
+                go.AddComponent(rigidC);
+
+                boxC = new BoxCollider();
+                boxC.size = new Vector3(0.12f, 0.38f, 0.12f);
+                go.AddComponent(boxC);
 
                 scene.AddGameObject(go);
             }
@@ -243,12 +301,14 @@ namespace GameEngine
 
             rigidC = new Rigidbody();
             rigidC.isKinematic = false;
-            rigidC.mass = 4;
+            rigidC.mass = 7;
             go.AddComponent(rigidC);
 
             sphereC = new SphereCollider();
             sphereC.radius = 0.1f;
             go.AddComponent(sphereC);
+
+            go.AddComponent(new Ball());
 
             cameraMSC.ball = go.transform;
 
