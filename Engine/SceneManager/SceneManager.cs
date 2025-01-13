@@ -300,12 +300,14 @@ namespace GameEngine
 
             scene.AddGameObject(go);
 
+
+            //GroundCollider
             go = new GameObject();
             go.name = "GroundCollider";
             go.AddComponent(new Transform());
 
 
-            go.transform.position = new Vector3(0, -0.25f, -15);
+            go.transform.position = new Vector3(0, -0.25f, -12);
             go.@static = true;
 
             boxC = new BoxCollider();
@@ -320,7 +322,7 @@ namespace GameEngine
             go.AddComponent(rigidC);
             scene.AddGameObject(go);
 
-
+            //Camera
             go = new GameObject();
             go.name = "MainCamera";
             go.AddComponent(new Transform());
@@ -360,7 +362,8 @@ namespace GameEngine
 
             scene.AddGameObject(go);
 
-
+            //Floor
+            /*
             go = new GameObject();
             go.name = "Floor";
             go.@static = true;
@@ -379,7 +382,7 @@ namespace GameEngine
             go.transform.rotation = new Vector3(0, 0, 0);
 
             scene.AddGameObject(go);
-            
+            */
             return scene;
 
         }
