@@ -131,6 +131,7 @@ namespace GameEngine
             audioSourceC = new AudioSource();
             audioSourceC.clipId = "BowlingWiiMusic.wav";
             audioSourceC.listener = audioListener;
+            audioSourceC.loop = true;
             go.AddComponent(audioSourceC);
 
             gameManagerC = new GameManager();
