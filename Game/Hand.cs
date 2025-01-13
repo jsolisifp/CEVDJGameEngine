@@ -43,7 +43,15 @@ namespace GameEngine
             position.Z = MathF.Max(MathF.Min(position.Z, 0.5f), -0.5f);
             gameObject.transform.position = position;
 
-            if (GameManager.state == GameManager.State.grabbing)
+
+            if (GameManager.state == GameManager.State.idle)
+            {
+                if (Input.IsMouseButtonPressed(0))
+                {
+                    GameManager.nextState = GameManager.State.grabbing;
+                }
+            }
+            else if (GameManager.state == GameManager.State.grabbing)
             {
                 if (grabbed != null)
                 {
@@ -67,13 +75,6 @@ namespace GameEngine
                     {
                         GameManager.nextState = GameManager.State.idle;
                     }                    
-                }
-            }
-            else // state == State.idle
-            {
-                if (Input.IsMouseButtonPressed(0))
-                {
-                    GameManager.nextState = GameManager.State.grabbing;
                 }
             }
         }

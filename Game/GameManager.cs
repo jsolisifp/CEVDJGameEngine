@@ -25,10 +25,13 @@ namespace GameEngine
         public override void Start()
         {
             audioSource.Play();
+            state = State.idle;
         }
 
         public override void Update(float deltaTime)
         {
+            Console.WriteLine(state);
+
             // Cambios de estado
 
             if (GameManager.state != GameManager.nextState)

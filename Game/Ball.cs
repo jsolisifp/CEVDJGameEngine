@@ -10,7 +10,10 @@ namespace GameEngine.Game
     {
         public override void OnCollisionEnter(Physics.Collision collision)
         {
-            GameManager.nextState = GameManager.State.hitting;
+            if (collision.rigidbody.GetGameObject().name.Contains("BowlingPin"))
+            {
+                GameManager.nextState = GameManager.State.hitting;
+            }
         }
     }
 }
