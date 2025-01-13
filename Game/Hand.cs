@@ -52,13 +52,13 @@ namespace GameEngine
 
             Vector3 position = gameObject.transform.position;
 
-            if (position.X < -2.0f)
+            if (position.X < -1.5f)
             {
-                position.X = -2.0f;
+                position.X = -1.5f;
             }
-            else if (position.X > 2.0f)
+            else if (position.X > 1.5f)
             {
-                position.X = 2.0f;
+                position.X = 1.5f;
             }
 
             if (position.Y < 0f)
@@ -70,13 +70,13 @@ namespace GameEngine
                 position.Y = 1.0f;
             }
 
-            if (position.Z < -0.5f)
+            if (position.Z < -1f)
             {
-                position.Z = -0.5f;
+                position.Z = -1f;
             }
-            else if (position.Z > 5f)
+            else if (position.Z > 1f)
             {
-                position.Z = 5f;
+                position.Z = 1f;
             }
 
             gameObject.transform.position = position;
@@ -96,9 +96,8 @@ namespace GameEngine
 
                 if (!Input.IsMouseButtonPressed(0))
                 {
-                    Vector3 forwardDirection = gameObject.transform.rotation * Vector3.UnitZ;
-                    float launchSpeed = 5.0f;
-                    t.position = forwardDirection * launchSpeed;
+
+                    t.GetGameObject();
 
                     nextState = State.idle;
                 }

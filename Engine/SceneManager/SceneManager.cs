@@ -118,8 +118,8 @@ namespace GameEngine
             SphereCollider sphereC;
             Rigidbody rigidC;
             Trigger triggerC;
-            AudioSource audioSourceC;
-            AudioListener audioListenerC;
+            //AudioSource audioSourceC;
+            //AudioListener audioListenerC;
 
             go = new GameObject();
             go.name = "DirectionalLight";
@@ -133,25 +133,19 @@ namespace GameEngine
             go.AddComponent(directionalLightC);
             scene.AddGameObject(go);
 
-            string[] props = { "BowlingCentralLane.obj",
-                "BowlingCover.obj",
-                "BowlingGround.obj",
+            string[] props = {"BowlingCover.obj",
                 "BowlingLaneLeft.obj",
                 "BowlingLaneRight.obj",
                 "BowlingMarksDots.obj",
                 "BowlingMarksArrows.obj",
-                "BowlingPlacePins.obj",
-                "BowlingPlatform.obj"};
+                "BowlingPlacePins.obj"};
 
-            string[] propsNames = { "CentralLane",
-                "Cover",
-                "Ground",
+            string[] propsNames = {"Cover",
                 "LaneLeft",
                 "LaneRight",
                 "MarksDots",
                 "MarksArrows",
-                "PlacePins",
-                "Platform"};
+                "PlacePins"};
 
             for (int i = 0; i < propsNames.Length; i++)
             {
@@ -162,7 +156,7 @@ namespace GameEngine
                 rendererC = new Renderer();
                 rendererC.modelId = props[i];
                 rendererC.shaderId = "Default.shader";
-                rendererC.textureId = "Texture1.png";
+                rendererC.textureId = "Blue.png";
 
                 go.AddComponent(rendererC);
                 scene.AddGameObject(go);
@@ -190,10 +184,56 @@ namespace GameEngine
 
             scene.AddGameObject(go);
             */
-            //Pin
 
+            //Pista
+            go = new GameObject();
+            go.name = "Pista";
+            go.AddComponent(new Transform());
+
+            go.transform.position = new Vector3(0, 0, 0);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "BowlingPlatform.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Red.png";
+
+            go.AddComponent(rendererC);
+            scene.AddGameObject(go);
+
+            //PistaCentral
+            go = new GameObject();
+            go.name = "PistaCentral";
+            go.AddComponent(new Transform());
+
+            go.transform.position = new Vector3(0, 0, 0);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "BowlingCentralLane.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Wood.png";
+
+            go.AddComponent(rendererC);
+            scene.AddGameObject(go);
+
+
+            //Ground
+            go = new GameObject();
+            go.name = "Ground";
+            go.AddComponent(new Transform());
+
+            go.transform.position = new Vector3(0, 0, 0);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "BowlingGround.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Green.png";
+
+            go.AddComponent(rendererC);
+            scene.AddGameObject(go);
+
+            //Pin
             float pinSpacing = 0.3f; 
-            int[] rows = {4, 3, 2, 1}; 
+            int[] rows = {1, 2, 3, 4}; 
             float startZ = -10; 
             float startX = 0;
 
@@ -204,7 +244,7 @@ namespace GameEngine
 
                     float xOffset = -((row - 1) * pinSpacing / 2) + (i * pinSpacing);
                     float x = startX + xOffset;
-                    float z = startZ - (rows.Length - row) * pinSpacing;
+                    float z = startZ - (rows.Length + row) * pinSpacing;
 
                     go = new GameObject();
                     go.name = "BowlingPin";
@@ -226,7 +266,7 @@ namespace GameEngine
                     go.AddComponent(rigidC);
 
                     boxC = new BoxCollider();
-                    boxC.size = new Vector3(0.2f, 0.1f, 0.2f);
+                    boxC.size = new Vector3(0.15f, 0.4f, 0.15f);
 
                     go.AddComponent(boxC);
                     scene.AddGameObject(go);
@@ -263,11 +303,13 @@ namespace GameEngine
             go = new GameObject();
             go.name = "GroundCollider";
             go.AddComponent(new Transform());
-            
+
+
+            go.transform.position = new Vector3(0, -0.25f, -15);
             go.@static = true;
 
             boxC = new BoxCollider();
-            boxC.size = new Vector3(100, 0.2f, 100);
+            boxC.size = new Vector3(7, 0.5f, 30);
 
             go.AddComponent(boxC);
 
@@ -283,14 +325,14 @@ namespace GameEngine
             go.name = "MainCamera";
             go.AddComponent(new Transform());
 
-            go.transform.position = new Vector3(0, 1, 3);
+            go.transform.position = new Vector3(0, 2, 3);
             go.transform.rotation = new Vector3(-30, 0, 0);  
 
             cameraC = new Camera();
             go.AddComponent(cameraC);
 
-            audioListenerC = new AudioListener();
-            go.AddComponent(audioListenerC);
+            //audioListenerC = new AudioListener();
+            //go.AddComponent(audioListenerC);
 
             scene.AddGameObject(go);
 
