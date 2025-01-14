@@ -14,7 +14,8 @@ namespace GameEngine
             idle,
             grabbing,
             rolling,
-            hitting
+            hitting,
+            reseting
         }
 
         public static State state;

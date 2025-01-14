@@ -284,6 +284,10 @@ namespace GameEngine
                 boxC.size = new Vector3(0.12f, 0.38f, 0.12f);
                 go.AddComponent(boxC);
 
+                Pin pinC = new Pin();
+                pinC.rb = rigidC;
+                go.AddComponent(pinC);
+
                 scene.AddGameObject(go);
             }
 
@@ -309,7 +313,9 @@ namespace GameEngine
             sphereC.radius = 0.1f;
             go.AddComponent(sphereC);
 
-            go.AddComponent(new Ball());
+            Ball ballC = new Ball();
+            ballC.rb = rigidC;  
+            go.AddComponent(ballC);
 
             cameraMSC.ball = go.transform;
 
