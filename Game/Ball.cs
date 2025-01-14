@@ -23,6 +23,7 @@ namespace GameEngine.Game
                 gameObject.transform.rotation = new Vector3(0, 0, 0);
                 rb.speed = new Vector3(0, 0, 0);
                 rb.angularSpeed = new Vector3(0, 0, 0);
+
                 GameManager.nextState = GameManager.State.idle;
             }
             else

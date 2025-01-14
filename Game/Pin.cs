@@ -32,6 +32,14 @@ namespace GameEngine
             {
                 rb.isKinematic = false;
             }
+
+            if (GameManager.state == GameManager.State.hitting)
+            {
+                if (gameObject.transform.rotation.X != 0)
+                {
+                    Console.WriteLine(gameObject.name + " is down rotation: " + gameObject.transform.rotation.X);
+                }
+            }
         }
     }
 }
