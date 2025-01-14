@@ -11,24 +11,15 @@ namespace GameEngine
 {
     internal class Hand : Component
     {
-        enum State
-        {
-            idle,
-            grabbing
-        }
-
         Rigidbody grabbed;
-
-        State state;
-        State nextState;
-
         Vector2 previousMousePosition;
 
         public override void Start()
         {
             grabbed = null;
-            state = State.idle;
-            nextState = State.idle;
+
+            GameManager.state = GameManager.State.idle;
+            GameManager.nextState = GameManager.State.idle;
 
             previousMousePosition = Input.GetMousePosition();
         }
@@ -82,9 +73,12 @@ namespace GameEngine
             gameObject.transform.position = position;
 
 
-            if (state == State.idle)
+            if (GameManager.state == GameManager.State.idle)
             {
-
+                if (Input.IsMouseButtonPressed(0))
+                {
+                    GameManager.nextState = GameManager.State.grabbing;
+                }
             }
 
             else // state == State.grabbing
@@ -96,18 +90,25 @@ namespace GameEngine
 
                 if (!Input.IsMouseButtonPressed(0))
                 {
-
-                    t.GetGameObject();
-
-                    nextState = State.idle;
+                    if (grabbed != null)
+                    {
+                        //grabbed.isKinematic = false;
+                        grabbed.AddForce(new Vector3(0, 0, -70f), Physics.ForceMode.impulse);
+                        grabbed = null;
+                        GameManager.nextState = GameManager.State.going;
+                    }
+                    else
+                    {
+                        GameManager.nextState = GameManager.State.idle;
+                    }
                 }
             }
 
             //Cambios Estado
 
-            if (state!= nextState)
+            if (GameManager.state != GameManager.nextState)
             {
-                if (nextState == State.grabbing)
+                if (GameManager.nextState == GameManager.State.grabbing)
                 {
                     // Codigo al entrar en grabbing
                     grabbed.isKinematic = true;
@@ -120,17 +121,17 @@ namespace GameEngine
                     grabbed = null;
                 }
 
-                state = nextState;
+                GameManager.state = GameManager.nextState;
             }
 
         }
 
         public override void OnTriggerEnter(Rigidbody other)
         {
-            if (state == State.idle && Input.IsMouseButtonPressed(0) && other.GetGameObject().name == "BowlingBowl")
+            if (GameManager.state == GameManager.State.idle && Input.IsMouseButtonPressed(0) && other.GetGameObject().name == "BowlingBowl")
             {
                 grabbed = other;
-                nextState = State.grabbing;
+                GameManager.nextState = GameManager.State.grabbing;
             }
         }
 

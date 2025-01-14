@@ -118,6 +118,7 @@ namespace GameEngine
             SphereCollider sphereC;
             Rigidbody rigidC;
             Trigger triggerC;
+
             //AudioSource audioSourceC;
             //AudioListener audioListenerC;
 
