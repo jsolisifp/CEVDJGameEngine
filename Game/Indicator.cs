@@ -17,12 +17,20 @@ namespace GameEngine.Game
                 {
                     renderer.textureId = "Red.png";
                 }
+                else
+                {
+                    renderer.textureId = "Green.png";
+                }
             }
             else
             {
                 if (GameManager.triesLeft < 1)
                 {
                     renderer.textureId = "Red.png";
+                }
+                else
+                {
+                    renderer.textureId = "Green.png";
                 }
             }
         }

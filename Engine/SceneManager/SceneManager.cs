@@ -371,6 +371,7 @@ namespace GameEngine
             go.AddComponent(new Transform());
             go.transform.position = new Vector3(1.5f, 0, -2);
             go.transform.scale = new Vector3(0.4f, 0.4f, 0.4f);
+            go.transform.rotation = new Vector3(-90, 0, 0);
 
             rendererC = new Renderer();
             rendererC.modelId = "UnitBox.obj";
@@ -378,7 +379,9 @@ namespace GameEngine
             rendererC.textureId = "Blanco.png";
             go.AddComponent(rendererC);
 
-            //go.AddComponent(new Counter());
+            Counter counterC = new Counter();
+            counterC.renderer = rendererC;
+            go.AddComponent(counterC);
 
             scene.AddGameObject(go);
 

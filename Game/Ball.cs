@@ -14,6 +14,14 @@ namespace GameEngine.Game
         public override void Update(float deltaTime)
         {
 
+            if (GameManager.state == GameManager.State.idle)
+            {
+                if (GameManager.GetTries() == 0 && GameManager.GetPinsDown() != 10)
+                {
+                    GameManager.nextState = GameManager.State.reseting;
+                }
+            }
+
             if (GameManager.state == GameManager.State.reseting)
             {
                 timer = 0;

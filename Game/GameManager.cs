@@ -59,6 +59,7 @@ namespace GameEngine
                             triesLeft = 0;
                             break;
                         case 0:
+                            pinsDown = 0;
                             triesLeft = 2;
                             break;
                     }
