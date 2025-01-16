@@ -55,10 +55,11 @@ namespace GameEngine
             {
                 if (grabbed != null)
                 {
-                    //grabbed.isKinematic = true;
+                    grabbed.isKinematic = true;
                     Transform t = grabbed.GetGameObject().transform;
                     t.position = gameObject.transform.TransformPosition(grabbedOffset);
                     t.rotation = gameObject.transform.rotation;
+                    grabbed.speed = new Vector3(0, 0, -10f);
                 }
 
                 // Tengo que cambiar de estado?
@@ -66,8 +67,7 @@ namespace GameEngine
                 {
                     if (grabbed != null)
                     {
-                        //grabbed.isKinematic = false;
-                        grabbed.AddForce(new Vector3(0, 0, -70f), Physics.ForceMode.impulse);
+                        grabbed.isKinematic = false;
                         grabbed = null;
                         GameManager.nextState = GameManager.State.rolling;
                     }

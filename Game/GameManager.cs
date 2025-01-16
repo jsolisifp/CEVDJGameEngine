@@ -9,6 +9,9 @@ namespace GameEngine
 {
     internal class GameManager : Component
     {
+        public static int triesLeft;
+        public int previousTry;
+        public static int pinsDown;
         public enum State
         {
             idle,
@@ -26,19 +29,56 @@ namespace GameEngine
         public override void Start()
         {
             audioSource.Play();
+            triesLeft = 2;
+            previousTry = 2;
+            pinsDown = 0;
             state = State.idle;
         }
 
         public override void Update(float deltaTime)
         {
             Console.WriteLine(state);
-
+            Console.WriteLine("Tries: " + triesLeft);
+            Console.WriteLine("Pins Down: " + pinsDown);
             // Cambios de estado
 
-            if (GameManager.state != GameManager.nextState)
+            if (state != nextState)
             {
-                GameManager.state = GameManager.nextState;
+                if (state == State.reseting) 
+                {
+                    previousTry = triesLeft;
+                }
+                if(nextState == State.reseting)
+                {
+                    switch (previousTry)
+                    {
+                        case 2:
+                            triesLeft = 1;
+                            break;
+                        case 1:
+                            triesLeft = 0;
+                            break;
+                        case 0:
+                            triesLeft = 2;
+                            break;
+                    }
+
+                }
+                state = nextState;
             }
+        }
+
+        public static int GetTries()
+        {
+            return triesLeft;
+        }
+        public static int GetPinsDown()
+        {
+            return pinsDown;
+        }
+        public static void PinDown()
+        {
+            pinsDown++;
         }
     }
 }

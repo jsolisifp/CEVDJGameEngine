@@ -34,9 +34,19 @@ namespace GameEngine.Game
             if (GameManager.state == GameManager.State.hitting) 
             {
                 timer += deltaTime;
-                if (timer >= 5) 
+                if (GameManager.GetTries() > 0)
                 {
-                    GameManager.nextState = GameManager.State.reseting;
+                    if (timer >= 5)
+                    {
+                        GameManager.nextState = GameManager.State.reseting;
+                    }
+                }
+                else
+                {
+                    if (timer >= 10)
+                    {
+                        GameManager.nextState = GameManager.State.reseting;
+                    }
                 }
             }
         }

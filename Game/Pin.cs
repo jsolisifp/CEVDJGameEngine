@@ -9,14 +9,16 @@ namespace GameEngine
 {
     internal class Pin : Component
     {
-
         public Rigidbody rb;
 
         Vector3 originalPos;
         Vector3 originalRot;
 
+        bool down;
+
         public override void Start()
         {
+            down = false;
             originalPos = gameObject.transform.position;
             originalRot = gameObject.transform.rotation;
         }
@@ -24,22 +26,31 @@ namespace GameEngine
         {
             if (GameManager.state == GameManager.State.reseting)
             {
-                rb.isKinematic = true;
-                gameObject.transform.rotation = originalRot;
-                gameObject.transform.position = originalPos;
+                if(GameManager.GetTries() > 0)
+                {
+                    if (gameObject.transform.rotation.X > 1 || gameObject.transform.rotation.X < -1 && !down)
+                    {
+                        Thrown();
+                    }
+                }
+                else
+                {
+                    down = false;
+                    rb.isKinematic = true;
+                    gameObject.transform.rotation = originalRot;
+                    gameObject.transform.position = originalPos;
+                }
             }
             else
             {
                 rb.isKinematic = false;
             }
+        }
 
-            if (GameManager.state == GameManager.State.hitting)
-            {
-                if (gameObject.transform.rotation.X != 0)
-                {
-                    Console.WriteLine(gameObject.name + " is down rotation: " + gameObject.transform.rotation.X);
-                }
-            }
+        public void Thrown()
+        {
+            down = true;
+            GameManager.PinDown();
         }
     }
 }

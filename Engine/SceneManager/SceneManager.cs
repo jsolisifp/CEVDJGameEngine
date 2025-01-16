@@ -215,10 +215,6 @@ namespace GameEngine
                 {
                     rendererC.textureId = "Marron.png";
                 }
-                else
-                {
-                    rendererC.textureId = "Texture1.png";
-                }
                 
                 go.AddComponent(rendererC);
 
@@ -342,6 +338,47 @@ namespace GameEngine
             go.AddComponent(new Trigger());
 
             go.AddComponent(new Hand());
+
+            scene.AddGameObject(go);
+
+            // Tries Indicators
+
+            for (int i = 1; i <= 2; i++)
+            {
+                go = new GameObject();
+                go.name = "Light" + i;
+                go.AddComponent(new Transform());
+                go.transform.position = new Vector3(-2.5f + (i/2), 0, -2);
+                go.transform.scale = new Vector3(0.4f, 0.4f, 0.4f);
+
+                rendererC = new Renderer();
+                rendererC.modelId = "UnitBox.obj";
+                rendererC.shaderId = "Default.shader";
+                rendererC.textureId = "Green.png";
+                go.AddComponent(rendererC);
+
+                Indicator indicatorC = new Indicator();
+                indicatorC.renderer = rendererC;
+                go.AddComponent(indicatorC);
+
+                scene.AddGameObject(go);
+            }
+
+            // Counter
+
+            go = new GameObject();
+            go.name = "Counter";
+            go.AddComponent(new Transform());
+            go.transform.position = new Vector3(1.5f, 0, -2);
+            go.transform.scale = new Vector3(0.4f, 0.4f, 0.4f);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "UnitBox.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "Blanco.png";
+            go.AddComponent(rendererC);
+
+            //go.AddComponent(new Counter());
 
             scene.AddGameObject(go);
 
