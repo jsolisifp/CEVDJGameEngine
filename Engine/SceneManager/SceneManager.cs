@@ -249,9 +249,11 @@ namespace GameEngine
             go = CreateGameObject("Ball", false, new Vector3(0, 0.5f, 0));
             AddRenderer(go, "BowlingBall.obj", "Default.shader", "Purple.png");
             AddSphereCollider(go, 0.12f);
-            AddRigidbody(go, false);
+            AddRigidbody(go, isKinematic: false, mass: 1.0f, speed: Vector3.Zero, angularSpeed: Vector3.Zero);
+
             scene.AddGameObject(go);
 
+            // Guardar la referencia a la bola para el GameManager
             ball = go;
 
             // Crear los pines individualmente

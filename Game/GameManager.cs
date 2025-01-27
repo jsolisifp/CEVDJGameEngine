@@ -155,36 +155,39 @@ namespace GameEngine
 
         private async void WaitForObjectsToSettle()
         {
-            int maxWaitTime = 5000; // Máximo tiempo de espera (5 segundos)
+            int maxWaitTime = 5000; // Tiempo máximo de espera (5 segundos)
             int elapsedTime = 0;
             int checkInterval = 100; // Intervalo de verificación (100 ms)
 
+            // Esperar hasta que la bola y los pines estén quietos o se alcance el tiempo límite
             while (!AreAllObjectsStill() && elapsedTime < maxWaitTime)
             {
                 await System.Threading.Tasks.Task.Delay(checkInterval);
                 elapsedTime += checkInterval;
             }
 
-            if (!AreAllObjectsStill())
+            // Si el tiempo límite se alcanza y la bola no se detuvo, reiniciarla
+            if (elapsedTime >= maxWaitTime || !AreAllObjectsStill())
             {
-                // Si no se detiene dentro del tiempo, forzar la detención de la bola
-                ForceStopBall();
+                Console.WriteLine("La bola no se detuvo a tiempo. Forzando su regreso...");
+                ResetBall(); // Asegurarnos de traer la bola de vuelta
             }
 
+            // Determinar el resultado del turno
             if (pins.All(pin => pin.Isfallen))
             {
-                SetState(GameState.FinExito);
+                SetState(GameState.FinExito); // Si todos los pines están caídos, finaliza el juego con éxito
             }
             else if (remainingTurns > 0)
             {
                 remainingTurns--;
                 Console.WriteLine($"Turnos restantes: {remainingTurns}");
-                ResetBall();
+                ResetBall(); // Reiniciar la bola incluso si el turno continúa
                 SetState(GameState.MoverManoLibre);
             }
             else
             {
-                SetState(GameState.FinFracaso);
+                SetState(GameState.FinFracaso); // Si no quedan turnos, finaliza el juego en fracaso
             }
         }
 
@@ -192,17 +195,25 @@ namespace GameEngine
         private void ResetBall()
         {
             Console.WriteLine("Reiniciando la bola para el siguiente turno...");
+
             if (ball != null)
             {
-                ball.transform.position = new Vector3(0, 0.5f, 0); // Posición inicial
+                // Establecer la posición inicial de la bola
+                ball.transform.position = new Vector3(0, 0.5f, 0); // Cambiar a la posición inicial deseada
+
+                // Reiniciar la velocidad lineal y rotacional
                 Rigidbody rb = ball.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
-                    rb.speed = Vector3.Zero;       // Reiniciar velocidad lineal
-                    rb.angularSpeed = Vector3.Zero; // Reiniciar velocidad angular
+                    rb.isKinematic = false;
+                    rb.speed = Vector3.Zero;       // Detener la velocidad lineal
+                    rb.angularSpeed = Vector3.Zero; // Detener la velocidad angular
                 }
+
+                // Opcional: Restablecer otras propiedades de la bola si es necesario
             }
         }
+
 
 
         private bool AreAllObjectsStill()
@@ -213,11 +224,12 @@ namespace GameEngine
             // Verificar si la bola está quieta
             Rigidbody ballRb = ball.GetComponent<Rigidbody>();
             bool ballStill = ballRb != null
-                             && ballRb.speed.Length() < 0.01f
-                             && ballRb.angularSpeed.Length() < 0.01f;
+                             && ballRb.speed.Length() < 0.01f // Velocidad lineal casi cero
+                             && ballRb.angularSpeed.Length() < 0.01f; // Velocidad angular casi cero
 
             return pinsStill && ballStill;
         }
+
 
 
         private void StartGamePlay()
