@@ -18,6 +18,7 @@ namespace GameEngine
         SphereCollider sphereCollider;
 
         BodyHandle handle;
+        public BodyHandle Handle => handle;
         StaticHandle staticHandle;
 
         Vector3 accumulatedForce;

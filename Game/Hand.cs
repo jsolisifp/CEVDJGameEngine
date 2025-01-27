@@ -23,6 +23,8 @@ namespace GameEngine
         State nextState;
 
         Rigidbody grabbed;
+        private bool ballLaunched = false; 
+
 
         public override void Start()
         {
@@ -70,11 +72,15 @@ namespace GameEngine
             {
                 if(nextState == State.grabbing)
                 {
+                    GameManager.Instance.SetState(GameManager.GameState.MoverManoConBola);
                     grabbed.isKinematic = true;
+                    ballLaunched = false;
                 }
                 else
                 {
+                    GameManager.Instance.SetState(GameManager.GameState.EsperandoObjetosQuietos);
                     grabbed.isKinematic = false;
+                    ballLaunched = true;
                     grabbed = null;
                 }
 
