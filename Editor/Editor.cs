@@ -159,6 +159,7 @@ namespace GameEngine
             DrawMenu();
             DrawViews();
             DrawModals();
+            DrawGameStateView();
 
             controller.Render();
         }
@@ -816,6 +817,71 @@ namespace GameEngine
             ImGui.End();
 
         }
+
+        static void DrawGameStateView()
+        {
+            ImGui.Begin("Game State View", defaultWindowFlags);
+
+            GameManager.GameState currentState = GameManager.Instance.CurrentState;
+            string currentMessage = GameManager.Instance.CurrentMessage;
+
+            ImGui.Text($"Estado Actual: {currentState}");
+            ImGui.TextWrapped($"Mensaje: {currentMessage}");
+
+            // Opciones para el estado de bienvenida
+            if (currentState == GameManager.GameState.Bienvenida)
+            {
+                if (ImGui.Button("JUGAR"))
+                {
+                    GameManager.Instance.SetState(GameManager.GameState.Presentando);
+                }
+                if (ImGui.Button("SALIR"))
+                {
+                    GameManager.Instance.SetState(GameManager.GameState.Salir);
+                }
+            }
+
+            // Botones para otros estados (manual testing)
+            if (ImGui.Button("Estado: Bienvenida"))
+            {
+                GameManager.Instance.SetState(GameManager.GameState.Bienvenida);
+            }
+            if (ImGui.Button("Estado: Presentando"))
+            {
+                GameManager.Instance.SetState(GameManager.GameState.Presentando);
+            }
+            if (ImGui.Button("Estado: Mover Mano Libre"))
+            {
+                GameManager.Instance.SetState(GameManager.GameState.MoverManoLibre);
+            }
+            if (ImGui.Button("Estado: Mover Mano con Bola"))
+            {
+                GameManager.Instance.SetState(GameManager.GameState.MoverManoConBola);
+            }
+            if (ImGui.Button("Estado: Esperando Objetos Quietos"))
+            {
+                GameManager.Instance.SetState(GameManager.GameState.EsperandoObjetosQuietos);
+            }
+            if (ImGui.Button("Estado: Fin Fracaso"))
+            {
+                GameManager.Instance.SetState(GameManager.GameState.FinFracaso);
+            }
+            if (ImGui.Button("Estado: Fin Éxito"))
+            {
+                GameManager.Instance.SetState(GameManager.GameState.FinExito);
+            }
+
+            ImGui.End();
+        }
+
+        public static void OpenSaveSceneModal(bool playAfter)
+        {
+            openSaveSceneModal = true;
+            modalSaveScenePlayAfter = playAfter;
+        }
+
+
+
 
         static void RemoveSelectedGameObject()
         {

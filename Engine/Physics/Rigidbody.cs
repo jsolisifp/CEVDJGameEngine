@@ -97,6 +97,23 @@ namespace GameEngine
                 }
                 else
                 {
+                    // Aplicar desaceleración progresiva
+                    float friction = 0.98f; // Fricción lineal
+                    float angularFriction = 0.95f; // Fricción rotacional
+
+                    speed *= friction; // Reducir velocidad lineal
+                    angularSpeed *= angularFriction; // Reducir velocidad angular
+
+                    // Si la velocidad cae por debajo del umbral, detenerla completamente
+                    if (speed.Length() < 0.01f)
+                    {
+                        speed = Vector3.Zero;
+                    }
+                    if (angularSpeed.Length() < 0.01f)
+                    {
+                        angularSpeed = Vector3.Zero;
+                    }
+
                     Physics.AddLinearImpulse(accumulatedForce * deltaTime, handle);
                     Physics.AddVelocity(accumulatedAcceleration * deltaTime, handle);
                     Physics.AddAngularImpulse(accumulatedTorque * deltaTime, handle);

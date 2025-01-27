@@ -1,4 +1,5 @@
-﻿using Silk.NET.Assimp;
+﻿using BepuPhysics.Constraints;
+using Silk.NET.Assimp;
 using Silk.NET.Windowing;
 using System.Numerics;
 
@@ -193,6 +194,7 @@ namespace GameEngine
             Rigidbody rigidC;
             Trigger triggerC;
             List<Pin> pins = new List<Pin>();
+            GameObject ball;
 
             go = CreateGameObject("DirectionalLight", false, Vector3.Zero, new Vector3(45, 0, 0));
             AddDirectionalLight(go);
@@ -250,6 +252,8 @@ namespace GameEngine
             AddRigidbody(go, false);
             scene.AddGameObject(go);
 
+            ball = go;
+
             // Crear los pines individualmente
             Vector3 pinStartPosition = new Vector3(0, 0, -23.5f);
             float pinSpacing = 0.30f;
@@ -283,7 +287,7 @@ namespace GameEngine
                 }
             }
 
-            GameManager.Instance.InitializePins(pins);
+            GameManager.Instance.InitializeGame(pins, ball);
 
             go = CreateGameObject("HandRight", false, new Vector3(0, 0.260f, 0));
             AddRenderer(go, "HandRight.obj", "Default.shader", "HandColor.png");

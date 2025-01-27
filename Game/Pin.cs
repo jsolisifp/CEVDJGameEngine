@@ -57,6 +57,12 @@ namespace GameEngine
             }
         }
 
+        public bool IsStationary()
+        {
+            return rb.speed.Length() < 0.01f && rb.angularSpeed.Length() < 0.01f;
+        }
+
+
         public void Reset()
         {
             gameObject.transform.position = initialPosition;
