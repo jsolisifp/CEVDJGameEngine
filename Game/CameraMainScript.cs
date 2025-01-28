@@ -23,8 +23,8 @@ namespace GameEngine
         {
             if (GameManager.state == GameManager.State.grabbing && Input.IsMouseButtonPressed(1))
             {
-                transform.position = new Vector3(3.5f, 3, -2);
-                transform.rotation = new Vector3(-20, 90, 20);
+                transform.position = new Vector3(0, 1.5f, 1f);
+                transform.rotation = new Vector3(-40, 0, 0);
             }
             else if (GameManager.state == GameManager.State.rolling)
             {

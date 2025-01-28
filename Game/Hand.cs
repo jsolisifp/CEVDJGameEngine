@@ -36,14 +36,14 @@ namespace GameEngine
             if(!Input.IsMouseButtonPressed(1))
             { gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, -deltaMousePoistion.Y, 0); }
             else
-            { gameObject.transform.position += 0.001f * new Vector3(0, 0, deltaMousePoistion.Y); }
+            { gameObject.transform.position += 0.002f * new Vector3(0, 0, deltaMousePoistion.Y); }
             
             previousMousePosition = mousePosition;
 
             Vector3 position = gameObject.transform.position;
             position.X = MathF.Max(MathF.Min(position.X, 0.6f), -0.6f);
             position.Y = MathF.Max(MathF.Min(position.Y, 0.7f), 0.2f);
-            position.Z = MathF.Max(MathF.Min(position.Z, 0.5f), -0.5f);
+            position.Z = MathF.Max(MathF.Min(position.Z, 0f), -1f);
             gameObject.transform.position = position;
 
 
@@ -64,10 +64,9 @@ namespace GameEngine
                     t.position = gameObject.transform.TransformPosition(grabbedOffset);
                     t.rotation = gameObject.transform.rotation;
 
-                    float momentum = position.Z - position.Z * 20f;
-                    grabbed.speed = new Vector3(0, 0, -momentum);
-
-                    //grabbed.speed = new Vector3(0, 0, -10f);
+                    Console.WriteLine(position.Z);
+                    float momentum = position.Z * 10f;
+                    grabbed.speed = new Vector3(0, 0, momentum);
                 }
 
                 // Tengo que cambiar de estado?
