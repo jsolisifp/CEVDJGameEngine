@@ -280,6 +280,12 @@ namespace GameEngine
                 boxC.size = new Vector3(0.12f, 0.38f, 0.12f);
                 go.AddComponent(boxC);
 
+                audioSourceC = new AudioSource();
+                audioSourceC.clipId = "PinHit.wav";
+                audioSourceC.listener = audioListener;
+                audioSourceC.loop = false;
+                go.AddComponent(audioSourceC);
+
                 Pin pinC = new Pin();
                 pinC.rb = rigidC;
                 go.AddComponent(pinC);
@@ -317,7 +323,7 @@ namespace GameEngine
 
             scene.AddGameObject(go);
 
-            // Hand Right
+            // Hand
 
             go = new GameObject();
             go.name = "HandRight";
@@ -334,6 +340,12 @@ namespace GameEngine
             boxC = new BoxCollider();
             boxC.size = new Vector3(0.1f, 0.02f, 0.24f);
             go.AddComponent(boxC);
+
+            audioSourceC = new AudioSource();
+            audioSourceC.clipId = "BallRolling.wav";
+            audioSourceC.listener = audioListener;
+            audioSourceC.loop = false;
+            go.AddComponent(audioSourceC);
 
             go.AddComponent(new Trigger());
 
@@ -404,8 +416,6 @@ namespace GameEngine
             go.AddComponent(boxC);
 
             scene.AddGameObject(go);
-
-            // Pins 1-10
 
             return scene;
 

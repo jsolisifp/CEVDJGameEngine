@@ -13,12 +13,15 @@ namespace GameEngine
         public Vector3 grabbedOffset = new Vector3(-0.05f, -0.1f, -0.1f);
         Rigidbody grabbed;
         Vector2 previousMousePosition;
+        AudioSource audioSource;
 
         public override void Start()
         {
             grabbed = null;
             GameManager.state = GameManager.State.idle;
             GameManager.nextState = GameManager.State.idle;
+
+            audioSource = gameObject.GetComponent<AudioSource>();
 
             previousMousePosition = Input.GetMousePosition();
         }
@@ -55,6 +58,7 @@ namespace GameEngine
             {
                 if (grabbed != null)
                 {
+                    audioSource.Play();
                     grabbed.isKinematic = true;
                     Transform t = grabbed.GetGameObject().transform;
                     t.position = gameObject.transform.TransformPosition(grabbedOffset);

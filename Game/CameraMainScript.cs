@@ -19,7 +19,7 @@ namespace GameEngine
             }
             else if (GameManager.state == GameManager.State.rolling)
             {
-                gameObject.transform.position = ball.position + new Vector3(0, 1, 1.5f);
+                gameObject.transform.position += ball.position + new Vector3(0, 1, 1.5f) - gameObject.transform.position;
                 gameObject.transform.rotation = new Vector3(-20, 0, 0);
             }
             else if (GameManager.state == GameManager.State.hitting)

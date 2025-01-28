@@ -16,11 +16,15 @@ namespace GameEngine
 
         bool down;
 
+        AudioSource audioSource;
+
         public override void Start()
         {
             down = false;
             originalPos = gameObject.transform.position;
             originalRot = gameObject.transform.rotation;
+
+            audioSource = gameObject.GetComponent<AudioSource>();
         }
         public override void Update(float deltaTime)
         {
@@ -44,6 +48,14 @@ namespace GameEngine
             else
             {
                 rb.isKinematic = false;
+            }
+        }
+
+        public override void OnCollisionEnter(Physics.Collision collision)
+        {
+            if (collision.rigidbody.GetGameObject().name != "GroundCollider")
+            {
+                audioSource.Play();
             }
         }
 
