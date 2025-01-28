@@ -14,7 +14,8 @@ namespace GameEngine
         enum State
         {
             idle,
-            grabbing
+            grabbing,
+            moving
         };
         
         Vector2 mousePrevious;
@@ -23,15 +24,15 @@ namespace GameEngine
         State nextState;
 
         Rigidbody grabbed;
-        private bool ballLaunched = false; 
+        public bool ballLaunched = false; 
 
 
         public override void Start()
         {
             mousePrevious = Input.GetMousePosition();
 
-            nextState = State.idle;
-            nextState = State.idle;
+            state = State.idle;
+            nextState = State.moving;
 
         }
 
@@ -76,12 +77,24 @@ namespace GameEngine
                     grabbed.isKinematic = true;
                     ballLaunched = false;
                 }
-                else
+                else if (nextState == State.idle)
                 {
-                    GameManager.Instance.SetState(GameManager.GameState.EsperandoObjetosQuietos);
-                    grabbed.isKinematic = false;
-                    ballLaunched = true;
-                    grabbed = null;
+                    //GameManager.Instance.SetState(GameManager.GameState.EsperandoObjetosQuietos);
+                    //grabbed.isKinematic = false;
+                    //ballLaunched = true;
+                    //grabbed = null;
+                    
+                    if (grabbed != null)
+                    {
+                        grabbed.isKinematic = false;
+                        ballLaunched = true;
+                        grabbed = null;
+                        GameManager.Instance.SetState(GameManager.GameState.EsperandoObjetosQuietos);
+                    }
+                }
+                else if (nextState == State.moving)
+                {
+                    GameManager.Instance.SetState(GameManager.GameState.MoverManoLibre);
                 }
 
                 state = nextState;

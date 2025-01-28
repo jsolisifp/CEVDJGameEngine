@@ -38,7 +38,6 @@ namespace GameEngine
         private List<Pin> pins;
         private GameObject ball;
         private string currentMessage;
-
         public GameState CurrentState => currentState;
         public string CurrentMessage => currentMessage;
 
@@ -157,7 +156,13 @@ namespace GameEngine
             {
                 remainingTurns--;
                 Console.WriteLine($"Turnos restantes: {remainingTurns}. Preparando siguiente turno...");
-                ResetBall();
+                Hand hand = ball.GetComponent<Hand>();
+                if (hand != null && hand.ballLaunched)
+                {
+                    Console.WriteLine("Me reinicio");
+                    ResetBall();
+                    hand.ballLaunched = false; // Reiniciar la bandera
+                }
                 SetState(GameState.MoverManoLibre);
             }
             else

@@ -46,7 +46,7 @@ namespace GameEngine
                     rb.isKinematic = false;
 
                     Vector3 collisionForce = collision.rigidbody.speed * rb.mass * 0.8f;
-                    rb.AddForce(collisionForce, Physics.ForceMode.acceleration);
+                    rb.AddForce(collisionForce, Physics.ForceMode.impulse);
 
                     if (!isFallen)
                     {
