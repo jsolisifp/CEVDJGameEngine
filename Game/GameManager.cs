@@ -37,9 +37,6 @@ namespace GameEngine
 
         public override void Update(float deltaTime)
         {
-            Console.WriteLine(state);
-            Console.WriteLine("Tries: " + triesLeft);
-            Console.WriteLine("Pins Down: " + pinsDown);
             // Cambios de estado
 
             if (state != nextState)

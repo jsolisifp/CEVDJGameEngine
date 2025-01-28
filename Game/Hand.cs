@@ -36,7 +36,7 @@ namespace GameEngine
             if(!Input.IsMouseButtonPressed(1))
             { gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, -deltaMousePoistion.Y, 0); }
             else
-            { gameObject.transform.position += 0.001f * new Vector3(deltaMousePoistion.X, 0, deltaMousePoistion.Y); }
+            { gameObject.transform.position += 0.001f * new Vector3(0, 0, deltaMousePoistion.Y); }
             
             previousMousePosition = mousePosition;
 
@@ -63,7 +63,11 @@ namespace GameEngine
                     Transform t = grabbed.GetGameObject().transform;
                     t.position = gameObject.transform.TransformPosition(grabbedOffset);
                     t.rotation = gameObject.transform.rotation;
-                    grabbed.speed = new Vector3(0, 0, -10f);
+
+                    float momentum = position.Z - position.Z * 20f;
+                    grabbed.speed = new Vector3(0, 0, -momentum);
+
+                    //grabbed.speed = new Vector3(0, 0, -10f);
                 }
 
                 // Tengo que cambiar de estado?
@@ -80,6 +84,10 @@ namespace GameEngine
                         GameManager.nextState = GameManager.State.idle;
                     }                    
                 }
+            }
+            else if (GameManager.state == GameManager.State.reseting)
+            {
+                gameObject.transform.position = new Vector3(0,0,0);
             }
         }
 

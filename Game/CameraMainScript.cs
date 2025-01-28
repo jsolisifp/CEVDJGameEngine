@@ -9,18 +9,30 @@ namespace GameEngine
 {
     internal class CameraMainScript : Component
     {
+        private Transform transform;
+
         public Transform ball;
+        private Vector3 offset = new Vector3(0, 1, 1.5f);
+        public float smoothTime = 0.1f;
+
+        public override void Start()
+        {
+            transform = gameObject.transform;
+        }
         public override void Update(float deltaTime)
         {
             if (GameManager.state == GameManager.State.grabbing && Input.IsMouseButtonPressed(1))
             {
-                gameObject.transform.position = new Vector3(3.5f, 3, -2);
-                gameObject.transform.rotation = new Vector3(-20, 90, 20);
+                transform.position = new Vector3(3.5f, 3, -2);
+                transform.rotation = new Vector3(-20, 90, 20);
             }
             else if (GameManager.state == GameManager.State.rolling)
             {
-                gameObject.transform.position += ball.position + new Vector3(0, 1, 1.5f) - gameObject.transform.position;
-                gameObject.transform.rotation = new Vector3(-20, 0, 0);
+                transform.rotation = new Vector3(-20, 0, 0);
+
+                Vector3 ballPosition = ball.position;
+                
+                transform.position = Vector3.Lerp(transform.position, ballPosition + offset, smoothTime);
             }
             else if (GameManager.state == GameManager.State.hitting)
             {
@@ -28,8 +40,8 @@ namespace GameEngine
             }
             else
             {
-                gameObject.transform.position = new Vector3(0, 1, 2);
-                gameObject.transform.rotation = new Vector3(-20, 0, 0);
+                transform.position = new Vector3(0, 1, 2);
+                transform.rotation = new Vector3(-20, 0, 0);
             }
         }
     }
