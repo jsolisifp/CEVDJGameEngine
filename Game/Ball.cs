@@ -21,30 +21,20 @@ namespace GameEngine.Game
                     GameManager.nextState = GameManager.State.reseting;
                 }
             }
-
-            if (GameManager.state == GameManager.State.reseting)
+            else if (GameManager.state == GameManager.State.rolling)
             {
-                timer = 0;
-
-                rb.isKinematic = true;
-                gameObject.transform.position = new Vector3(0, 1, 0);
-                gameObject.transform.rotation = new Vector3(0, 0, 0);
-                rb.speed = new Vector3(0, 0, 0);
-                rb.angularSpeed = new Vector3(0, 0, 0);
-
-                GameManager.nextState = GameManager.State.idle;
+                timer += deltaTime;
+                if (timer > 5 && gameObject.transform.position.Z > -1) 
+                {
+                    GameManager.nextState = GameManager.State.reseting;
+                }
             }
-            else
-            {
-                rb.isKinematic = false;
-            }
-
-            if (GameManager.state == GameManager.State.hitting) 
+            else if (GameManager.state == GameManager.State.hitting)
             {
                 timer += deltaTime;
                 if (GameManager.GetTries() > 0)
                 {
-                    if (timer >= 5)
+                    if (timer >= 3)
                     {
                         GameManager.nextState = GameManager.State.reseting;
                     }
@@ -57,11 +47,29 @@ namespace GameEngine.Game
                     }
                 }
             }
+            else if (GameManager.state == GameManager.State.reseting)
+            {
+                timer = 0;
+
+                rb.isKinematic = true;
+                gameObject.transform.position = new Vector3(0, 0.5f, 0);
+                gameObject.transform.rotation = new Vector3(0, 0, 0);
+                rb.speed = new Vector3(0, 0, 0);
+                rb.angularSpeed = new Vector3(0, 0, 0);
+
+                GameManager.nextState = GameManager.State.idle;
+            }
+
+            if (!(GameManager.state == GameManager.State.reseting))
+            {
+                rb.isKinematic = false;
+            }
         }
         public override void OnCollisionEnter(Physics.Collision collision)
         {
             if (collision.rigidbody.GetGameObject().name.Contains("BowlingPin"))
             {
+                timer = 0;
                 GameManager.nextState = GameManager.State.hitting;
             }
         }
