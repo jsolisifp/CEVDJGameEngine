@@ -346,8 +346,8 @@ namespace GameEngine
             }
 
             SpeedControl(deltaTime);
-            CheckWalls(deltaTime);
             CheckFloor();
+            CheckWalls(deltaTime);
 
             if (speed != Vector3.Zero)
             {
@@ -586,7 +586,7 @@ namespace GameEngine
             Vector3[] positions = [direction * marginWalls, direction * marginWalls, direction * marginWalls];
             positions[1].X -= positions[0].Z;
             positions[1].Z += positions[0].X;
-            positions[2].X += positions[0].Z;
+            positions[2].X += positions[0].Z; 
             positions[2].Z -= positions[0].X;
 
             Vector3 transformedDirection = gameObject.transform.TransformDirection(direction);
@@ -597,7 +597,7 @@ namespace GameEngine
             for (int i = 0; i < positions.Length * 2 && !wall; i++)
             {
                 position = positions[i % positions.Length];
-                position.Y = i >= positions.Length ? marginWallHeight : 0.1f;
+                position.Y = i >= positions.Length ? marginWallHeight : 0.11f;
                 wall = Physics.Raycast(gameObject.transform.TransformPosition(position), transformedDirection, wallDistance, out hit);
                 if (wall)
                 {
