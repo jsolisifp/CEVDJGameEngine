@@ -129,7 +129,7 @@ namespace GameEngine
             directionalLightC = new DirectionalLight();
             directionalLightC.color = new Vector3(1, 0.961f, 0.753f);
             directionalLightC.intensity = 1.0f;
-            go.transform.rotation = new Vector3(45, 0, 0);
+            go.transform.rotation = new Vector3(180, 0, 0);
 
             go.AddComponent(directionalLightC);
             scene.AddGameObject(go);
@@ -360,6 +360,24 @@ namespace GameEngine
             go.AddComponent(new Trigger());
 
             go.AddComponent(new Hand());
+
+            scene.AddGameObject(go);
+
+            //Instructions
+            go = new GameObject();
+            go.name = "Instrucciones";
+            go.AddComponent(new Transform());
+
+            go.transform.position = new Vector3(3, 1f, -3);
+            go.transform.rotation = new Vector3(180, -15, 0);
+            go.transform.scale = new Vector3(2f, 2f, 1f);
+
+            rendererC = new Renderer();
+            rendererC.modelId = "UnitBox.obj";
+            rendererC.shaderId = "Default.shader";
+            rendererC.textureId = "TextoBolos.png";
+
+            go.AddComponent(rendererC);
 
             scene.AddGameObject(go);
 
