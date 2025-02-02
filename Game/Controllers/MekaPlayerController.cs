@@ -37,6 +37,9 @@ namespace GameEngine
 
         Target currentTarget;
         List<Target> targets;
+        List<Target> levelTargets;
+
+        int state = 0;
         
         public MekaPlayerController()
         {
@@ -54,6 +57,21 @@ namespace GameEngine
             meka = mekaTransform.GetGameObject().GetComponent<Meka>();
             mekaTarget = meka.hitBox.GetGameObject().GetComponent<Target>();
             targets = new List<Target>();
+            levelTargets = new List<Target>();
+
+            List<GameObject> goList = SceneManager.GetActiveScene().GetGameObjects();
+            GameObject go;
+            Target target;
+            for (int i = 0; i < goList.Count; i++)
+            {
+                go = goList[i];
+                target = go.GetComponent<Target>();
+                if (target != null)
+                {
+                    levelTargets.Add(target);
+                }
+            }
+
             Editor.SetPlayerController(this);
         }
 
@@ -67,6 +85,38 @@ namespace GameEngine
             TargetingSystem();
             ControlMeka(deltaTime);
 
+
+            if(state == 0 && meka.hp <=0) state = 2;
+
+            if (state == 0)
+            {
+                Target target;
+                bool noEnemies = true;
+                for (int i = 0; i < levelTargets.Count; i++)
+                {
+                    target = levelTargets[i];
+
+                    if(target.teamId == -1)
+                    {
+                        levelTargets.Remove(target);
+                        i--;
+                    }else if(target.teamId != mekaTarget.teamId)
+                    {
+                        noEnemies = false;
+                    }
+                }
+
+                if (noEnemies)
+                {
+                    state = 1;
+                    meka.hp = 0;
+                }
+            }
+
+            if (meka.hp <= 0 && meka.maxHp<=0)
+            {
+                Engine.Stop();
+            }
         }
 
         private void CenterCamera(float deltaTime)
@@ -255,6 +305,7 @@ namespace GameEngine
             uint hudBackColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.5f, 0.5f, 0.5f, 1));
             uint lockOnColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.8f, 0.8f, 0.8f, 0.75f));
             uint damageColor = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 0f, 0f, 1f));
+            uint winColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0f, 1f, 0f, 1f));
 
             //HP START
             drawListPtr.AddRectFilled(new Vector2(0, windowSize.Y), new Vector2(20 + windowSize.X / 8, windowSize.Y - 70), transparentColor, 0.25f);
@@ -330,6 +381,17 @@ namespace GameEngine
             drawListPtr.AddRectFilled(new Vector2(windowSize.X - 10, windowSize.Y - 9), new Vector2(windowSize.X + (-10 - windowSize.X / 8) * percent, windowSize.Y - 14), hudColor);
             //AMMO END
 
+            if (state == 1)
+            {
+                drawListPtr.AddRectFilled(new Vector2(windowSize.X * 0.2f - 10, windowSize.Y * 0.3f - 10), new Vector2(windowSize.X * 0.2f + windowSize.Y * 0.5f, windowSize.Y * 0.3f + windowSize.Y * 0.1f), transparentColor);
+                drawListPtr.AddText(ImGui.GetFont(), windowSize.Y * 0.1f, new Vector2(windowSize.X * 0.2f, windowSize.Y * 0.3f), winColor, "You Win");
+            }
+            else if (state == 2)
+            {
+                drawListPtr.AddRectFilled(new Vector2(windowSize.X * 0.2f - 10, windowSize.Y * 0.3f - 10), new Vector2(windowSize.X * 0.2f + windowSize.Y * 0.5f, windowSize.Y * 0.3f + windowSize.Y * 0.1f), transparentColor);
+                drawListPtr.AddText(ImGui.GetFont(), windowSize.Y * 0.1f, new Vector2(windowSize.X * 0.2f, windowSize.Y * 0.3f), damageColor, "You Lose");
+            }
+
             //CROSSHAIR START
             Vector2 crosshair = windowSize * 0.5f;
             Vector3 aim = mainCameraTransform.InverseTransformPosition(meka.currentAim);
@@ -363,8 +425,8 @@ namespace GameEngine
                 drawListPtr.AddRectFilled(targetHPpos,new Vector2(targetHPpos.X + (radius * 2) * (currentTarget.GetHP() + accumulatedTargetDamage) / currentTarget.GetMaxHP(), targetHPpos.Y + radius / 10), damageColor);
 
                 drawListPtr.AddRectFilled(targetHPpos, new Vector2(targetHPpos.X + (radius * 2) * currentTarget.GetHP()/currentTarget.GetMaxHP(), targetHPpos.Y + radius/10), hudColor);
-                
-                
+
+
                 if (lastTargetHp > currentTarget.GetHP())
                 {
                     accumulatedTargetDamage += lastTargetHp - currentTarget.GetHP();
@@ -380,6 +442,8 @@ namespace GameEngine
                 {
                     lastTargetDamage += deltaTime;
                 }
+
+
             }
 
         }

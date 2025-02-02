@@ -366,6 +366,7 @@ namespace GameEngine
                 Scene scene = SceneManager.GetActiveScene();
                 scene.RemoveGameObject(hitBox.GetGameObject());
                 scene.RemoveGameObject(gameObject);
+                maxHp = 0;
             }
         }
 

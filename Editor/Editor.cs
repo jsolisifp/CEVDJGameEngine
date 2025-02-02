@@ -178,6 +178,17 @@ namespace GameEngine
 
         }
 
+        static void Pause()
+        {
+            if(Engine.GetState() == Engine.State.playing)
+            {
+                Engine.Pause();
+            }else if ( Engine.GetState() == Engine.State.paused)
+            {
+                Engine.Resume();
+            }
+        }
+
         public static void OnRender(float deltaTime)
         {
             if (!enabled) return;
@@ -235,6 +246,10 @@ namespace GameEngine
                 SwitchEnabled();
             }
 
+            if(key == Key.P)
+            {
+                Pause();
+            }
         }
 
         static void DrawMenu()
